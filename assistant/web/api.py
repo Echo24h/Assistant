@@ -9,7 +9,7 @@ Identity and CSRF checks still apply (web/server.py does them first).
 import threading
 from contextlib import contextmanager
 
-from ..services.data import user_data
+from ..services.household import user_data
 from ..services.users import get_user
 
 

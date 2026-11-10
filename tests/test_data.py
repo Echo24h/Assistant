@@ -6,7 +6,7 @@ import sqlite3
 import pytest
 
 from assistant.agent.tools import ToolBox, ToolError
-from assistant.services.data import open_household, user_data
+from assistant.services.household import open_household, user_data
 from assistant.services.db import connect, migrations
 from helpers import household
 

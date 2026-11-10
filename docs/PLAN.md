@@ -37,7 +37,7 @@ Décisions prises le 10.11.2026. Document interne (en français, pour moi).
   API) : option pour plus tard, pour montrer MCP en entretien.
 - **Gmail : même approche** (API directe, `gmail.readonly`), décidé le
   10.11.2026. Un seul token Google pour les deux scopes
-  (`assistant/services/google_auth.py`) ; un token sans le scope Gmail impose un
+  (`assistant/services/google/auth.py`) ; un token sans le scope Gmail impose un
   nouveau `login`.
   - Contenu des mails marqué `untrusted_email`, corps tronqué à 3000
     caractères, **jamais écrit dans le journal** (`NOT_LOGGED`).

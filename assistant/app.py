@@ -7,10 +7,10 @@ import anthropic
 
 from .agent import Agent
 from .agent.tools import ToolBox
-from .services.gmail import Gmail
-from .services.google_auth import LoginRequired, get_credentials, google_service
-from .services.google_calendar import Calendar
-from .services.data import open_household, user_data
+from .services.google.gmail import Gmail
+from .services.google.auth import LoginRequired, get_credentials, google_service
+from .services.google.calendar import Calendar
+from .services.household import open_household, user_data
 from .services.db import connect
 from .services.users import User
 

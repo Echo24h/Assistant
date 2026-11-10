@@ -88,7 +88,7 @@ NOT_LOGGED = set()
 
 
 def functions(data) -> dict:
-    """data: services.data.UserData (what this person can see)."""
+    """data: services.household.UserData (what this person can see)."""
     return {
         "add_task": lambda a: data.tasks.add(a["title"], a["due_date"], a["priority"]),
         "list_tasks": lambda a: data.tasks.list(a["include_done"]),

@@ -27,7 +27,7 @@ class ToolError(Exception):
 
 class ToolBox:
     def __init__(self, data, confirm: ConfirmFn, calendar=None, gmail=None):
-        """data: services.data.UserData, what this person can see and change."""
+        """data: services.household.UserData, what this person can see and change."""
         self.data = data
         self.confirm = confirm
         self.definitions = []  # what the model is told it can call

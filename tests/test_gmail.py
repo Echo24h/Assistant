@@ -8,7 +8,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from assistant.agent import Agent
-from assistant.services.gmail import Gmail, body_text
+from assistant.services.google.gmail import Gmail, body_text
 from helpers import memory_data
 from assistant.agent.tools import ToolBox, ToolError
 

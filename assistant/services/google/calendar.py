@@ -1,7 +1,7 @@
 """Google Calendar access, called directly through Google's Python client.
 
 Safety rules (see docs/PLAN.md):
-- scope `calendar.events` (see google_auth.py);
+- scope `calendar.events` (see auth.py);
 - events never get guests, and every call sends `sendUpdates="none"`:
   a guest receives an email, which would be a way to send data out.
 - create / update / delete are confirmed by the user (see tools.py).

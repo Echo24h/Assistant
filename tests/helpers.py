@@ -1,6 +1,6 @@
 """A fresh in-memory database with a household, for tests."""
 
-from assistant.services.data import UserData, open_household, user_data
+from assistant.services.household import UserData, open_household, user_data
 from assistant.services.users import get_user
 
 PEOPLE = {"me@x.com": "Grégory", "her@x.com": "Anna"}

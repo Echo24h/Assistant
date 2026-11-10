@@ -1,4 +1,4 @@
-"""Gmail tools, read-only (services/gmail.py).
+"""Gmail tools, read-only (services/google/gmail.py).
 
 Only offered when Google is connected. Nothing here can send, delete or
 label email.

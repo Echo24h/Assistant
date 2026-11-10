@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from assistant.services.google_calendar import Calendar, event_body, short_event
+from assistant.services.google.calendar import Calendar, event_body, short_event
 from helpers import memory_data
 from assistant.agent.tools import ToolBox, ToolError
 

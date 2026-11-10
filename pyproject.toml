@@ -22,7 +22,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 packages = ["assistant", "assistant.agent", "assistant.agent.tools",
-            "assistant.services", "assistant.web"]
+            "assistant.services", "assistant.services.google", "assistant.web"]
 
 [tool.setuptools.package-data]
 "assistant.web" = ["static/*.html", "static/*.css", "static/*.js"]

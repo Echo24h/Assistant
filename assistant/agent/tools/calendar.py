@@ -1,11 +1,11 @@
-"""Google Calendar tools (services/google_calendar.py).
+"""Google Calendar tools (services/google/calendar.py).
 
 Only offered when Google is connected. Changes need confirmation.
 """
 
 from datetime import date
 
-from ...services.google_calendar import event_body
+from ...services.google.calendar import event_body
 
 REPEAT_LABELS = {"never": ""}
 ORDINALS = ["1st", "2nd", "3rd", "4th", "5th"]
