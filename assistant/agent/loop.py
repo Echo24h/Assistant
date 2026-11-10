@@ -13,7 +13,7 @@ from pathlib import Path
 
 import anthropic
 
-from .tools import NOT_LOGGED, ToolBox, ToolError
+from .tools import ToolBox, ToolError
 
 MAX_STEPS = 10  # safety net: never loop forever on tool calls
 
@@ -116,7 +116,7 @@ class Agent:
             "tool": name,
             "input": args,
             "error": is_error,
-            "output": "(not logged)" if name in NOT_LOGGED else output[:500],
+            "output": "(not logged)" if name in self.toolbox.not_logged else output[:500],
         }
         with self.log_path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")

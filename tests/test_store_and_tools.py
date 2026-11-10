@@ -3,8 +3,8 @@ from datetime import date
 
 import pytest
 
-from assistant.store import Store
-from assistant.tools import ToolBox, ToolError
+from assistant.services.store import Store
+from assistant.agent.tools import ToolBox, ToolError
 
 
 @pytest.fixture

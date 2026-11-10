@@ -3,8 +3,8 @@
 from types import SimpleNamespace as NS
 
 from assistant.agent import Agent
-from assistant.store import Store
-from assistant.tools import ToolBox
+from assistant.services.store import Store
+from assistant.agent.tools import ToolBox
 
 
 def text(t):

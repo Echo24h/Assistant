@@ -21,7 +21,8 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["assistant"]
+packages = ["assistant", "assistant.agent", "assistant.agent.tools",
+            "assistant.services", "assistant.web"]
 
 [tool.setuptools.package-data]
-assistant = ["static/*.html"]
+"assistant.web" = ["static/*.html"]

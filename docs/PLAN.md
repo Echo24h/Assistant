@@ -37,7 +37,7 @@ Décisions prises le 10.11.2026. Document interne (en français, pour moi).
   API) : option pour plus tard, pour montrer MCP en entretien.
 - **Gmail : même approche** (API directe, `gmail.readonly`), décidé le
   10.11.2026. Un seul token Google pour les deux scopes
-  (`assistant/google_auth.py`) ; un token sans le scope Gmail impose un
+  (`assistant/services/google_auth.py`) ; un token sans le scope Gmail impose un
   nouveau `login`.
   - Contenu des mails marqué `untrusted_email`, corps tronqué à 3000
     caractères, **jamais écrit dans le journal** (`NOT_LOGGED`).
@@ -125,6 +125,19 @@ Règle : **ne jamais donner le troisième** à l'agent qui lit mes mails.
 - Dépôt GitHub public : **code + faux mails de test uniquement**. Les
   vraies données vivent hors du dépôt (`~/.local/share/assistant/`).
 - Serveur : SSH par clé uniquement, pare-feu, mises à jour automatiques.
+
+## Architecture en trois couches (10.11.2026)
+
+- `services/` : le cœur (SQLite, Google), sans IA ni web.
+- `agent/` : la boucle et les outils, **un fichier par domaine** (tâches,
+  agenda, Gmail) ; `agent/tools/__init__.py` = liste autorisée et
+  confirmations. Plus tard, les domaines donnés au ToolBox dépendront de
+  la personne qui parle.
+- `web/` : la plateforme. Elle appelle **directement** `services/` pour ce
+  qui n'a pas besoin du modèle (voir/cocher la todo, l'agenda) : 0 token,
+  instantané. Les confirmations ✅ / ❌ ne concernent que les décisions du
+  modèle ; un clic de l'utilisateur est déjà sa décision. Identité et
+  CSRF s'appliquent à toutes les routes.
 
 ## Téléphone (décidé le 10.11.2026)
 

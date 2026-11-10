@@ -8,9 +8,9 @@ from unittest.mock import MagicMock
 import pytest
 
 from assistant.agent import Agent
-from assistant.gmail import Gmail, body_text
-from assistant.store import Store
-from assistant.tools import ToolBox, ToolError
+from assistant.services.gmail import Gmail, body_text
+from assistant.services.store import Store
+from assistant.agent.tools import ToolBox, ToolError
 
 
 def b64(text: str) -> str:

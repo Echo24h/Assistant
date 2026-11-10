@@ -27,7 +27,7 @@ from pathlib import Path
 
 import anthropic
 
-from .cli import api_error_message, build_agent
+from ..app import api_error_message, build_agent
 
 PAGE = Path(__file__).parent / "static" / "index.html"
 MAX_BODY = 10_000  # bytes: a chat message, not a file upload

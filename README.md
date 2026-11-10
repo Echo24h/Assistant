@@ -102,11 +102,17 @@ python -m assistant web      # chat page for the phone (see above)
 pytest                       # tests use fake clients: no API key, no Google account
 ```
 
-Code map: `assistant/agent.py` (the loop), `assistant/tools.py` (tool
-schemas, allowlist, confirmation gate), `assistant/store.py` (SQLite),
-`assistant/google_auth.py` (Google login), `assistant/google_calendar.py`,
-`assistant/gmail.py` (read-only), `assistant/web.py` and
-`assistant/static/index.html` (phone).
+Code map, in three layers:
+
+```
+assistant/
+  services/   the core: data and Google access, no AI, no web
+              store.py (SQLite), google_auth.py, google_calendar.py, gmail.py
+  agent/      the AI: loop.py (the hand-written agent loop) and tools/
+              (one module per domain; tools/__init__.py = allowlist + confirmation)
+  web/        the platform: server.py (identity, CSRF) and static/ (phone page)
+  app.py      assembles services + agent, shared by cli.py and web/
+```
 
 A pre-commit hook runs gitleaks with `.gitleaks.toml` to block committed
 secrets (Anthropic keys, Google client secrets):

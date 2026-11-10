@@ -4,9 +4,9 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from assistant.google_calendar import Calendar, event_body
-from assistant.store import Store
-from assistant.tools import ToolBox, ToolError
+from assistant.services.google_calendar import Calendar, event_body
+from assistant.services.store import Store
+from assistant.agent.tools import ToolBox, ToolError
 
 GOOGLE_EVENT = {
     "id": "abc",

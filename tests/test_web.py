@@ -10,9 +10,9 @@ from types import SimpleNamespace as NS
 
 import pytest
 
-from assistant import web
+from assistant.web import server as web
 from assistant.config import parse_users
-from assistant.web import App, Session, make_handler
+from assistant.web.server import App, Session, make_handler
 
 
 class FakeAgent:
