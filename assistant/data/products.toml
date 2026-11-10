@@ -1,0 +1,2431 @@
+# The product catalog: the ONLY ingredients and shopping items the app accepts.
+# Edited by hand, then restart: the database follows this file (services/products.py).
+#
+# [key]          stable English id: never change it (the database points to it)
+# fr, en         names shown, one per language (fr is used for French...)
+# aisle          one of: fruits et légumes, boulangerie, viande et poisson, frais,
+#                épicerie, surgelés, boissons, maison, autre
+# aliases        other ways to write it (recipes from websites, plurals...)
+#
+# To remove a product: delete it here. If a recipe still uses it, it stays,
+# shown as retired (python -m assistant products), until the recipe changes.
+
+# --- fruits et légumes ---
+
+[tomato]
+fr = "Tomate"
+en = "Tomato"
+aisle = "fruits et légumes"
+aliases = ["tomate grappe"]
+
+[cherry_tomato]
+fr = "Tomate cerise"
+en = "Cherry tomato"
+aisle = "fruits et légumes"
+
+[carrot]
+fr = "Carotte"
+en = "Carrot"
+aisle = "fruits et légumes"
+
+[onion]
+fr = "Oignon"
+en = "Onion"
+aisle = "fruits et légumes"
+aliases = ["oignon jaune"]
+
+[red_onion]
+fr = "Oignon rouge"
+en = "Red onion"
+aisle = "fruits et légumes"
+
+[shallot]
+fr = "Échalote"
+en = "Shallot"
+aisle = "fruits et légumes"
+
+[garlic]
+fr = "Ail"
+en = "Garlic"
+aisle = "fruits et légumes"
+aliases = ["gousse d'ail", "gousses d'ail"]
+
+[potato]
+fr = "Pomme de terre"
+en = "Potato"
+aisle = "fruits et légumes"
+aliases = ["patate"]
+
+[sweet_potato]
+fr = "Patate douce"
+en = "Sweet potato"
+aisle = "fruits et légumes"
+
+[zucchini]
+fr = "Courgette"
+en = "Zucchini"
+aisle = "fruits et légumes"
+
+[eggplant]
+fr = "Aubergine"
+en = "Eggplant"
+aisle = "fruits et légumes"
+
+[bell_pepper]
+fr = "Poivron"
+en = "Bell pepper"
+aisle = "fruits et légumes"
+aliases = ["poivron rouge", "poivron vert", "poivron jaune"]
+
+[cucumber]
+fr = "Concombre"
+en = "Cucumber"
+aisle = "fruits et légumes"
+
+[lettuce]
+fr = "Salade"
+en = "Lettuce"
+aisle = "fruits et légumes"
+aliases = ["laitue", "salade verte"]
+
+[spinach]
+fr = "Épinards"
+en = "Spinach"
+aisle = "fruits et légumes"
+aliases = ["épinard", "pousses d'épinard"]
+
+[broccoli]
+fr = "Brocoli"
+en = "Broccoli"
+aisle = "fruits et légumes"
+
+[cauliflower]
+fr = "Chou-fleur"
+en = "Cauliflower"
+aisle = "fruits et légumes"
+
+[cabbage]
+fr = "Chou"
+en = "Cabbage"
+aisle = "fruits et légumes"
+
+[leek]
+fr = "Poireau"
+en = "Leek"
+aisle = "fruits et légumes"
+
+[mushroom]
+fr = "Champignon"
+en = "Mushroom"
+aisle = "fruits et légumes"
+aliases = ["champignon de paris"]
+
+[green_bean]
+fr = "Haricot vert"
+en = "Green bean"
+aisle = "fruits et légumes"
+
+[pea]
+fr = "Petits pois"
+en = "Peas"
+aisle = "fruits et légumes"
+aliases = ["petit pois"]
+
+[corn]
+fr = "Maïs"
+en = "Corn"
+aisle = "fruits et légumes"
+
+[avocado]
+fr = "Avocat"
+en = "Avocado"
+aisle = "fruits et légumes"
+
+[pumpkin]
+fr = "Courge"
+en = "Squash"
+aisle = "fruits et légumes"
+aliases = ["potiron", "butternut"]
+
+[celery]
+fr = "Céleri"
+en = "Celery"
+aisle = "fruits et légumes"
+aliases = ["céleri branche"]
+
+[radish]
+fr = "Radis"
+en = "Radish"
+aisle = "fruits et légumes"
+
+[beetroot]
+fr = "Betterave"
+en = "Beetroot"
+aisle = "fruits et légumes"
+
+[fennel]
+fr = "Fenouil"
+en = "Fennel"
+aisle = "fruits et légumes"
+
+[ginger]
+fr = "Gingembre"
+en = "Ginger"
+aisle = "fruits et légumes"
+
+[lemon]
+fr = "Citron"
+en = "Lemon"
+aisle = "fruits et légumes"
+aliases = ["citron jaune"]
+
+[lime]
+fr = "Citron vert"
+en = "Lime"
+aisle = "fruits et légumes"
+
+[orange]
+fr = "Orange"
+en = "Orange"
+aisle = "fruits et légumes"
+
+[apple]
+fr = "Pomme"
+en = "Apple"
+aisle = "fruits et légumes"
+
+[pear]
+fr = "Poire"
+en = "Pear"
+aisle = "fruits et légumes"
+
+[banana]
+fr = "Banane"
+en = "Banana"
+aisle = "fruits et légumes"
+
+[strawberry]
+fr = "Fraise"
+en = "Strawberry"
+aisle = "fruits et légumes"
+
+[raspberry]
+fr = "Framboise"
+en = "Raspberry"
+aisle = "fruits et légumes"
+
+[blueberry]
+fr = "Myrtille"
+en = "Blueberry"
+aisle = "fruits et légumes"
+
+[grape]
+fr = "Raisin"
+en = "Grape"
+aisle = "fruits et légumes"
+
+[kiwi]
+fr = "Kiwi"
+en = "Kiwi"
+aisle = "fruits et légumes"
+
+[pineapple]
+fr = "Ananas"
+en = "Pineapple"
+aisle = "fruits et légumes"
+
+[mango]
+fr = "Mangue"
+en = "Mango"
+aisle = "fruits et légumes"
+
+[melon]
+fr = "Melon"
+en = "Melon"
+aisle = "fruits et légumes"
+
+[peach]
+fr = "Pêche"
+en = "Peach"
+aisle = "fruits et légumes"
+
+[apricot]
+fr = "Abricot"
+en = "Apricot"
+aisle = "fruits et légumes"
+
+[parsley]
+fr = "Persil"
+en = "Parsley"
+aisle = "fruits et légumes"
+
+[basil]
+fr = "Basilic"
+en = "Basil"
+aisle = "fruits et légumes"
+
+[coriander]
+fr = "Coriandre"
+en = "Coriander"
+aisle = "fruits et légumes"
+
+[chives]
+fr = "Ciboulette"
+en = "Chives"
+aisle = "fruits et légumes"
+
+[mint]
+fr = "Menthe"
+en = "Mint"
+aisle = "fruits et légumes"
+
+[clementine]
+fr = "Clémentine"
+en = "Clementine"
+aisle = "fruits et légumes"
+
+[mandarin]
+fr = "Mandarine"
+en = "Mandarin"
+aisle = "fruits et légumes"
+
+[grapefruit]
+fr = "Pamplemousse"
+en = "Grapefruit"
+aisle = "fruits et légumes"
+aliases = ["pomelo"]
+
+[cherry]
+fr = "Cerise"
+en = "Cherry"
+aisle = "fruits et légumes"
+
+[plum]
+fr = "Prune"
+en = "Plum"
+aisle = "fruits et légumes"
+aliases = ["quetsche"]
+
+[mirabelle_plum]
+fr = "Mirabelle"
+en = "Mirabelle plum"
+aisle = "fruits et légumes"
+
+[nectarine]
+fr = "Nectarine"
+en = "Nectarine"
+aisle = "fruits et légumes"
+aliases = ["brugnon"]
+
+[fig]
+fr = "Figue"
+en = "Fig"
+aisle = "fruits et légumes"
+
+[pomegranate]
+fr = "Grenade"
+en = "Pomegranate"
+aisle = "fruits et légumes"
+
+[passion_fruit]
+fr = "Fruit de la passion"
+en = "Passion fruit"
+aisle = "fruits et légumes"
+aliases = ["maracuja"]
+
+[papaya]
+fr = "Papaye"
+en = "Papaya"
+aisle = "fruits et légumes"
+
+[lychee]
+fr = "Litchi"
+en = "Lychee"
+aisle = "fruits et légumes"
+
+[blackberry]
+fr = "Mûre"
+en = "Blackberry"
+aisle = "fruits et légumes"
+
+[redcurrant]
+fr = "Groseille"
+en = "Redcurrant"
+aisle = "fruits et légumes"
+
+[blackcurrant]
+fr = "Cassis"
+en = "Blackcurrant"
+aisle = "fruits et légumes"
+
+[rhubarb]
+fr = "Rhubarbe"
+en = "Rhubarb"
+aisle = "fruits et légumes"
+
+[watermelon]
+fr = "Pastèque"
+en = "Watermelon"
+aisle = "fruits et légumes"
+
+[coconut]
+fr = "Noix de coco"
+en = "Coconut"
+aisle = "fruits et légumes"
+
+[quince]
+fr = "Coing"
+en = "Quince"
+aisle = "fruits et légumes"
+
+[persimmon]
+fr = "Kaki"
+en = "Persimmon"
+aisle = "fruits et légumes"
+
+[fresh_date]
+fr = "Datte"
+en = "Date"
+aisle = "fruits et légumes"
+
+[artichoke]
+fr = "Artichaut"
+en = "Artichoke"
+aisle = "fruits et légumes"
+
+[asparagus]
+fr = "Asperge"
+en = "Asparagus"
+aisle = "fruits et légumes"
+aliases = ["asperge verte", "asperge blanche"]
+
+[celeriac]
+fr = "Céleri-rave"
+en = "Celeriac"
+aisle = "fruits et légumes"
+
+[turnip]
+fr = "Navet"
+en = "Turnip"
+aisle = "fruits et légumes"
+
+[parsnip]
+fr = "Panais"
+en = "Parsnip"
+aisle = "fruits et légumes"
+
+[jerusalem_artichoke]
+fr = "Topinambour"
+en = "Jerusalem artichoke"
+aisle = "fruits et légumes"
+
+[endive]
+fr = "Endive"
+en = "Endive"
+aisle = "fruits et légumes"
+aliases = ["chicon"]
+
+[rocket]
+fr = "Roquette"
+en = "Rocket"
+aisle = "fruits et légumes"
+aliases = ["arugula"]
+
+[lambs_lettuce]
+fr = "Mâche"
+en = "Lamb's lettuce"
+aisle = "fruits et légumes"
+aliases = ["doucette"]
+
+[kale]
+fr = "Chou kale"
+en = "Kale"
+aisle = "fruits et légumes"
+aliases = ["kale"]
+
+[red_cabbage]
+fr = "Chou rouge"
+en = "Red cabbage"
+aisle = "fruits et légumes"
+
+[brussels_sprouts]
+fr = "Choux de Bruxelles"
+en = "Brussels sprouts"
+aisle = "fruits et légumes"
+aliases = ["chou de bruxelles"]
+
+[chinese_cabbage]
+fr = "Chou chinois"
+en = "Chinese cabbage"
+aisle = "fruits et légumes"
+
+[bok_choy]
+fr = "Pak choï"
+en = "Bok choy"
+aisle = "fruits et légumes"
+aliases = ["pak choi", "bok choy"]
+
+[swiss_chard]
+fr = "Blette"
+en = "Swiss chard"
+aisle = "fruits et légumes"
+aliases = ["bette"]
+
+[spring_onion]
+fr = "Oignon nouveau"
+en = "Spring onion"
+aisle = "fruits et légumes"
+aliases = ["cébette", "ciboule"]
+
+[fresh_chili]
+fr = "Piment frais"
+en = "Fresh chili pepper"
+aisle = "fruits et légumes"
+
+[snow_pea]
+fr = "Pois gourmand"
+en = "Snow pea"
+aisle = "fruits et légumes"
+aliases = ["mangetout"]
+
+[broad_bean]
+fr = "Fève"
+en = "Broad bean"
+aisle = "fruits et légumes"
+
+[bean_sprouts]
+fr = "Pousses de soja"
+en = "Bean sprouts"
+aisle = "fruits et légumes"
+aliases = ["germes de soja"]
+
+[okra]
+fr = "Gombo"
+en = "Okra"
+aisle = "fruits et légumes"
+
+[lemongrass]
+fr = "Citronnelle"
+en = "Lemongrass"
+aisle = "fruits et légumes"
+
+[dill]
+fr = "Aneth"
+en = "Dill"
+aisle = "fruits et légumes"
+
+[tarragon]
+fr = "Estragon"
+en = "Tarragon"
+aisle = "fruits et légumes"
+
+[rosemary]
+fr = "Romarin"
+en = "Rosemary"
+aisle = "fruits et légumes"
+
+[sage]
+fr = "Sauge"
+en = "Sage"
+aisle = "fruits et légumes"
+
+[chervil]
+fr = "Cerfeuil"
+en = "Chervil"
+aisle = "fruits et légumes"
+
+[watercress]
+fr = "Cresson"
+en = "Watercress"
+aisle = "fruits et légumes"
+
+[shiitake]
+fr = "Shiitake"
+en = "Shiitake"
+aisle = "fruits et légumes"
+
+[oyster_mushroom]
+fr = "Pleurote"
+en = "Oyster mushroom"
+aisle = "fruits et légumes"
+
+[chanterelle]
+fr = "Girolle"
+en = "Chanterelle"
+aisle = "fruits et légumes"
+
+[porcini]
+fr = "Cèpe"
+en = "Porcini"
+aisle = "fruits et légumes"
+
+[iceberg_lettuce]
+fr = "Laitue iceberg"
+en = "Iceberg lettuce"
+aisle = "fruits et légumes"
+aliases = ["iceberg"]
+
+[romaine_lettuce]
+fr = "Romaine"
+en = "Romaine lettuce"
+aisle = "fruits et légumes"
+aliases = ["laitue romaine"]
+
+[new_potato]
+fr = "Pommes de terre nouvelles"
+en = "New potatoes"
+aisle = "fruits et légumes"
+aliases = ["pomme de terre nouvelle"]
+
+[turmeric_root]
+fr = "Curcuma frais"
+en = "Fresh turmeric"
+aisle = "fruits et légumes"
+
+# --- boulangerie ---
+
+[bread]
+fr = "Pain"
+en = "Bread"
+aisle = "boulangerie"
+aliases = ["baguette"]
+
+[sandwich_bread]
+fr = "Pain de mie"
+en = "Sliced bread"
+aisle = "boulangerie"
+
+[croissant]
+fr = "Croissant"
+en = "Croissant"
+aisle = "boulangerie"
+
+[wrap]
+fr = "Tortilla"
+en = "Tortilla"
+aisle = "boulangerie"
+aliases = ["wrap"]
+
+[brioche]
+fr = "Brioche"
+en = "Brioche"
+aisle = "boulangerie"
+
+[burger_bun]
+fr = "Pain à burger"
+en = "Burger bun"
+aisle = "boulangerie"
+aliases = ["pain hamburger", "buns"]
+
+[hot_dog_bun]
+fr = "Pain à hot-dog"
+en = "Hot dog bun"
+aisle = "boulangerie"
+
+[pita]
+fr = "Pain pita"
+en = "Pita bread"
+aisle = "boulangerie"
+aliases = ["pita"]
+
+[naan]
+fr = "Naan"
+en = "Naan"
+aisle = "boulangerie"
+aliases = ["pain naan"]
+
+[wholemeal_bread]
+fr = "Pain complet"
+en = "Wholemeal bread"
+aisle = "boulangerie"
+
+[rye_bread]
+fr = "Pain de seigle"
+en = "Rye bread"
+aisle = "boulangerie"
+
+[rusks]
+fr = "Biscottes"
+en = "Rusks"
+aisle = "boulangerie"
+
+[pain_au_chocolat]
+fr = "Pain au chocolat"
+en = "Chocolate croissant"
+aisle = "boulangerie"
+aliases = ["chocolatine"]
+
+[crepe]
+fr = "Crêpes"
+en = "Crêpes"
+aisle = "boulangerie"
+aliases = ["crêpe"]
+
+[bagel]
+fr = "Bagel"
+en = "Bagel"
+aisle = "boulangerie"
+
+[breadsticks]
+fr = "Gressins"
+en = "Breadsticks"
+aisle = "boulangerie"
+
+# --- viande et poisson ---
+
+[ground_beef]
+fr = "Bœuf haché"
+en = "Ground beef"
+aisle = "viande et poisson"
+aliases = ["viande hachée", "boeuf haché", "steak haché"]
+
+[beef]
+fr = "Bœuf"
+en = "Beef"
+aisle = "viande et poisson"
+aliases = ["boeuf", "steak"]
+
+[chicken]
+fr = "Poulet"
+en = "Chicken"
+aisle = "viande et poisson"
+aliases = ["blanc de poulet", "escalope de poulet", "filet de poulet"]
+
+[pork]
+fr = "Porc"
+en = "Pork"
+aisle = "viande et poisson"
+aliases = ["côte de porc"]
+
+[veal]
+fr = "Veau"
+en = "Veal"
+aisle = "viande et poisson"
+
+[lamb]
+fr = "Agneau"
+en = "Lamb"
+aisle = "viande et poisson"
+
+[ham]
+fr = "Jambon"
+en = "Ham"
+aisle = "viande et poisson"
+aliases = ["jambon blanc"]
+
+[cured_ham]
+fr = "Jambon cru"
+en = "Cured ham"
+aisle = "viande et poisson"
+
+[bacon]
+fr = "Lardons"
+en = "Bacon bits"
+aisle = "viande et poisson"
+aliases = ["lardon", "bacon"]
+
+[sausage]
+fr = "Saucisse"
+en = "Sausage"
+aisle = "viande et poisson"
+
+[chorizo]
+fr = "Chorizo"
+en = "Chorizo"
+aisle = "viande et poisson"
+
+[salmon]
+fr = "Saumon"
+en = "Salmon"
+aisle = "viande et poisson"
+aliases = ["pavé de saumon"]
+
+[smoked_salmon]
+fr = "Saumon fumé"
+en = "Smoked salmon"
+aisle = "viande et poisson"
+
+[white_fish]
+fr = "Poisson blanc"
+en = "White fish"
+aisle = "viande et poisson"
+aliases = ["poisson"]
+
+[shrimp]
+fr = "Crevette"
+en = "Shrimp"
+aisle = "viande et poisson"
+
+[tuna_can]
+fr = "Thon en boîte"
+en = "Canned tuna"
+aisle = "viande et poisson"
+aliases = ["thon"]
+
+[turkey]
+fr = "Dinde"
+en = "Turkey"
+aisle = "viande et poisson"
+aliases = ["escalope de dinde", "blanc de dinde"]
+
+[duck]
+fr = "Canard"
+en = "Duck"
+aisle = "viande et poisson"
+aliases = ["magret de canard", "magret"]
+
+[rabbit]
+fr = "Lapin"
+en = "Rabbit"
+aisle = "viande et poisson"
+
+[chicken_thigh]
+fr = "Cuisse de poulet"
+en = "Chicken thigh"
+aisle = "viande et poisson"
+aliases = ["haut de cuisse"]
+
+[whole_chicken]
+fr = "Poulet entier"
+en = "Whole chicken"
+aisle = "viande et poisson"
+aliases = ["poulet rôti"]
+
+[chicken_wings]
+fr = "Ailes de poulet"
+en = "Chicken wings"
+aisle = "viande et poisson"
+
+[stewing_beef]
+fr = "Bœuf à mijoter"
+en = "Stewing beef"
+aisle = "viande et poisson"
+aliases = ["bœuf bourguignon", "bourguignon"]
+
+[roast_beef]
+fr = "Rôti de bœuf"
+en = "Roast beef"
+aisle = "viande et poisson"
+
+[pork_tenderloin]
+fr = "Filet mignon de porc"
+en = "Pork tenderloin"
+aisle = "viande et poisson"
+aliases = ["filet mignon"]
+
+[pork_belly]
+fr = "Poitrine de porc"
+en = "Pork belly"
+aisle = "viande et poisson"
+
+[merguez]
+fr = "Merguez"
+en = "Merguez"
+aisle = "viande et poisson"
+
+[chipolata]
+fr = "Chipolata"
+en = "Chipolata"
+aisle = "viande et poisson"
+
+[sausage_meat]
+fr = "Chair à saucisse"
+en = "Sausage meat"
+aisle = "viande et poisson"
+
+[salami]
+fr = "Salami"
+en = "Salami"
+aisle = "viande et poisson"
+
+[dry_sausage]
+fr = "Saucisson sec"
+en = "Dry sausage"
+aisle = "viande et poisson"
+aliases = ["saucisson"]
+
+[pancetta]
+fr = "Pancetta"
+en = "Pancetta"
+aisle = "viande et poisson"
+
+[cod]
+fr = "Cabillaud"
+en = "Cod"
+aisle = "viande et poisson"
+aliases = ["dos de cabillaud"]
+
+[hake]
+fr = "Colin"
+en = "Hake"
+aisle = "viande et poisson"
+aliases = ["merlu"]
+
+[fresh_tuna]
+fr = "Thon frais"
+en = "Fresh tuna"
+aisle = "viande et poisson"
+
+[trout]
+fr = "Truite"
+en = "Trout"
+aisle = "viande et poisson"
+
+[smoked_trout]
+fr = "Truite fumée"
+en = "Smoked trout"
+aisle = "viande et poisson"
+
+[sea_bass]
+fr = "Bar"
+en = "Sea bass"
+aisle = "viande et poisson"
+aliases = ["loup"]
+
+[sea_bream]
+fr = "Daurade"
+en = "Sea bream"
+aisle = "viande et poisson"
+aliases = ["dorade"]
+
+[sole]
+fr = "Sole"
+en = "Sole"
+aisle = "viande et poisson"
+
+[mackerel]
+fr = "Maquereau"
+en = "Mackerel"
+aisle = "viande et poisson"
+
+[sardine]
+fr = "Sardine"
+en = "Sardine"
+aisle = "viande et poisson"
+
+[canned_sardines]
+fr = "Sardines en boîte"
+en = "Canned sardines"
+aisle = "viande et poisson"
+
+[anchovy]
+fr = "Anchois"
+en = "Anchovies"
+aisle = "viande et poisson"
+
+[mussels]
+fr = "Moules"
+en = "Mussels"
+aisle = "viande et poisson"
+
+[scallops]
+fr = "Saint-Jacques"
+en = "Scallops"
+aisle = "viande et poisson"
+aliases = ["noix de saint-jacques"]
+
+[squid]
+fr = "Calamar"
+en = "Squid"
+aisle = "viande et poisson"
+aliases = ["encornet"]
+
+[octopus]
+fr = "Poulpe"
+en = "Octopus"
+aisle = "viande et poisson"
+
+[crab]
+fr = "Crabe"
+en = "Crab"
+aisle = "viande et poisson"
+
+[surimi]
+fr = "Surimi"
+en = "Surimi"
+aisle = "viande et poisson"
+
+# --- frais ---
+
+[milk]
+fr = "Lait"
+en = "Milk"
+aisle = "frais"
+
+[butter]
+fr = "Beurre"
+en = "Butter"
+aisle = "frais"
+
+[cream]
+fr = "Crème fraîche"
+en = "Cream"
+aisle = "frais"
+aliases = ["crème", "crème liquide", "crème entière"]
+
+[egg]
+fr = "Œuf"
+en = "Egg"
+aisle = "frais"
+aliases = ["oeuf"]
+
+[yogurt]
+fr = "Yaourt"
+en = "Yogurt"
+aisle = "frais"
+aliases = ["yoghourt"]
+
+[greek_yogurt]
+fr = "Yaourt grec"
+en = "Greek yogurt"
+aisle = "frais"
+
+[cottage_cheese]
+fr = "Fromage blanc"
+en = "Fromage blanc"
+aisle = "frais"
+
+[parmesan]
+fr = "Parmesan"
+en = "Parmesan"
+aisle = "frais"
+aliases = ["parmesan râpé"]
+
+[grated_cheese]
+fr = "Fromage râpé"
+en = "Grated cheese"
+aisle = "frais"
+aliases = ["gruyère râpé", "emmental râpé"]
+
+[mozzarella]
+fr = "Mozzarella"
+en = "Mozzarella"
+aisle = "frais"
+
+[feta]
+fr = "Feta"
+en = "Feta"
+aisle = "frais"
+
+[goat_cheese]
+fr = "Chèvre"
+en = "Goat cheese"
+aisle = "frais"
+aliases = ["fromage de chèvre"]
+
+[gruyere]
+fr = "Gruyère"
+en = "Gruyère"
+aisle = "frais"
+
+[raclette_cheese]
+fr = "Fromage à raclette"
+en = "Raclette cheese"
+aisle = "frais"
+
+[ricotta]
+fr = "Ricotta"
+en = "Ricotta"
+aisle = "frais"
+
+[mascarpone]
+fr = "Mascarpone"
+en = "Mascarpone"
+aisle = "frais"
+
+[tofu]
+fr = "Tofu"
+en = "Tofu"
+aisle = "frais"
+
+[puff_pastry]
+fr = "Pâte feuilletée"
+en = "Puff pastry"
+aisle = "frais"
+
+[shortcrust_pastry]
+fr = "Pâte brisée"
+en = "Shortcrust pastry"
+aisle = "frais"
+
+[pizza_dough]
+fr = "Pâte à pizza"
+en = "Pizza dough"
+aisle = "frais"
+
+[fresh_pasta]
+fr = "Pâtes fraîches"
+en = "Fresh pasta"
+aisle = "frais"
+
+[emmental]
+fr = "Emmental"
+en = "Emmental"
+aisle = "frais"
+
+[comte]
+fr = "Comté"
+en = "Comté"
+aisle = "frais"
+
+[camembert]
+fr = "Camembert"
+en = "Camembert"
+aisle = "frais"
+
+[brie]
+fr = "Brie"
+en = "Brie"
+aisle = "frais"
+
+[roquefort]
+fr = "Roquefort"
+en = "Roquefort"
+aisle = "frais"
+
+[blue_cheese]
+fr = "Fromage bleu"
+en = "Blue cheese"
+aisle = "frais"
+aliases = ["bleu"]
+
+[gorgonzola]
+fr = "Gorgonzola"
+en = "Gorgonzola"
+aisle = "frais"
+
+[reblochon]
+fr = "Reblochon"
+en = "Reblochon"
+aisle = "frais"
+
+[cheddar]
+fr = "Cheddar"
+en = "Cheddar"
+aisle = "frais"
+
+[halloumi]
+fr = "Halloumi"
+en = "Halloumi"
+aisle = "frais"
+
+[burrata]
+fr = "Burrata"
+en = "Burrata"
+aisle = "frais"
+
+[cream_cheese]
+fr = "Fromage frais à tartiner"
+en = "Cream cheese"
+aisle = "frais"
+aliases = ["philadelphia", "saint moret"]
+
+[vacherin]
+fr = "Vacherin"
+en = "Vacherin"
+aisle = "frais"
+
+[appenzeller]
+fr = "Appenzeller"
+en = "Appenzeller"
+aisle = "frais"
+
+[tete_de_moine]
+fr = "Tête de Moine"
+en = "Tête de Moine"
+aisle = "frais"
+
+[fondue_cheese]
+fr = "Fondue moitié-moitié"
+en = "Fondue cheese mix"
+aisle = "frais"
+aliases = ["fondue"]
+
+[whipped_cream]
+fr = "Crème chantilly"
+en = "Whipped cream"
+aisle = "frais"
+aliases = ["chantilly"]
+
+[sour_cream]
+fr = "Crème acidulée"
+en = "Sour cream"
+aisle = "frais"
+
+[skyr]
+fr = "Skyr"
+en = "Skyr"
+aisle = "frais"
+
+[oat_milk]
+fr = "Lait d'avoine"
+en = "Oat milk"
+aisle = "frais"
+
+[soy_milk]
+fr = "Lait de soja"
+en = "Soy milk"
+aisle = "frais"
+
+[almond_milk]
+fr = "Lait d'amande"
+en = "Almond milk"
+aisle = "frais"
+
+[margarine]
+fr = "Margarine"
+en = "Margarine"
+aisle = "frais"
+
+[hummus]
+fr = "Houmous"
+en = "Hummus"
+aisle = "frais"
+aliases = ["hummus"]
+
+[guacamole]
+fr = "Guacamole"
+en = "Guacamole"
+aisle = "frais"
+
+[gnocchi]
+fr = "Gnocchis"
+en = "Gnocchi"
+aisle = "frais"
+
+[fresh_ravioli]
+fr = "Raviolis frais"
+en = "Fresh ravioli"
+aisle = "frais"
+aliases = ["ravioli"]
+
+[tortellini]
+fr = "Tortellinis"
+en = "Tortellini"
+aisle = "frais"
+
+[tempeh]
+fr = "Tempeh"
+en = "Tempeh"
+aisle = "frais"
+
+[seitan]
+fr = "Seitan"
+en = "Seitan"
+aisle = "frais"
+
+[dessert_cream]
+fr = "Crème dessert"
+en = "Dessert cream"
+aisle = "frais"
+
+[fresh_soup]
+fr = "Soupe fraîche"
+en = "Fresh soup"
+aisle = "frais"
+
+# --- épicerie ---
+
+[pasta]
+fr = "Pâtes"
+en = "Pasta"
+aisle = "épicerie"
+aliases = ["pâtes (spaghetti)", "spaghetti", "spaghettis", "penne", "fusilli", "tagliatelle", "tagliatelles", "coquillette"]
+
+[lasagna_sheets]
+fr = "Lasagnes (feuilles)"
+en = "Lasagna sheets"
+aisle = "épicerie"
+aliases = ["feuille de lasagne", "lasagne"]
+
+[rice]
+fr = "Riz"
+en = "Rice"
+aisle = "épicerie"
+aliases = ["riz basmati", "riz long"]
+
+[risotto_rice]
+fr = "Riz à risotto"
+en = "Risotto rice"
+aisle = "épicerie"
+aliases = ["riz arborio"]
+
+[couscous]
+fr = "Semoule"
+en = "Couscous"
+aisle = "épicerie"
+aliases = ["couscous"]
+
+[quinoa]
+fr = "Quinoa"
+en = "Quinoa"
+aisle = "épicerie"
+
+[lentil]
+fr = "Lentilles"
+en = "Lentils"
+aisle = "épicerie"
+aliases = ["lentille corail"]
+
+[chickpea]
+fr = "Pois chiches"
+en = "Chickpeas"
+aisle = "épicerie"
+aliases = ["pois chiche"]
+
+[red_bean]
+fr = "Haricots rouges"
+en = "Kidney beans"
+aisle = "épicerie"
+aliases = ["haricot rouge"]
+
+[flour]
+fr = "Farine"
+en = "Flour"
+aisle = "épicerie"
+
+[sugar]
+fr = "Sucre"
+en = "Sugar"
+aisle = "épicerie"
+aliases = ["sucre en poudre"]
+
+[brown_sugar]
+fr = "Sucre roux"
+en = "Brown sugar"
+aisle = "épicerie"
+
+[icing_sugar]
+fr = "Sucre glace"
+en = "Icing sugar"
+aisle = "épicerie"
+
+[baking_powder]
+fr = "Levure chimique"
+en = "Baking powder"
+aisle = "épicerie"
+
+[yeast]
+fr = "Levure boulangère"
+en = "Yeast"
+aisle = "épicerie"
+
+[cocoa]
+fr = "Cacao en poudre"
+en = "Cocoa powder"
+aisle = "épicerie"
+
+[dark_chocolate]
+fr = "Chocolat noir"
+en = "Dark chocolate"
+aisle = "épicerie"
+aliases = ["chocolat"]
+
+[honey]
+fr = "Miel"
+en = "Honey"
+aisle = "épicerie"
+
+[jam]
+fr = "Confiture"
+en = "Jam"
+aisle = "épicerie"
+
+[oats]
+fr = "Flocons d'avoine"
+en = "Oats"
+aisle = "épicerie"
+
+[cereal]
+fr = "Céréales"
+en = "Cereal"
+aisle = "épicerie"
+
+[olive_oil]
+fr = "Huile d'olive"
+en = "Olive oil"
+aisle = "épicerie"
+
+[oil]
+fr = "Huile"
+en = "Oil"
+aisle = "épicerie"
+aliases = ["huile de tournesol", "huile neutre", "huile de colza"]
+
+[vinegar]
+fr = "Vinaigre"
+en = "Vinegar"
+aisle = "épicerie"
+aliases = ["vinaigre balsamique", "vinaigre de vin"]
+
+[mustard]
+fr = "Moutarde"
+en = "Mustard"
+aisle = "épicerie"
+
+[mayonnaise]
+fr = "Mayonnaise"
+en = "Mayonnaise"
+aisle = "épicerie"
+
+[ketchup]
+fr = "Ketchup"
+en = "Ketchup"
+aisle = "épicerie"
+
+[soy_sauce]
+fr = "Sauce soja"
+en = "Soy sauce"
+aisle = "épicerie"
+
+[salt]
+fr = "Sel"
+en = "Salt"
+aisle = "épicerie"
+aliases = ["fleur de sel", "gros sel"]
+
+[pepper]
+fr = "Poivre"
+en = "Pepper"
+aisle = "épicerie"
+aliases = ["poivre noir"]
+
+[oregano]
+fr = "Origan"
+en = "Oregano"
+aisle = "épicerie"
+aliases = ["origan séché"]
+
+[thyme]
+fr = "Thym"
+en = "Thyme"
+aisle = "épicerie"
+
+[bay_leaf]
+fr = "Laurier"
+en = "Bay leaf"
+aisle = "épicerie"
+aliases = ["feuille de laurier"]
+
+[herbes_de_provence]
+fr = "Herbes de Provence"
+en = "Herbes de Provence"
+aisle = "épicerie"
+
+[paprika]
+fr = "Paprika"
+en = "Paprika"
+aisle = "épicerie"
+
+[cumin]
+fr = "Cumin"
+en = "Cumin"
+aisle = "épicerie"
+
+[curry]
+fr = "Curry"
+en = "Curry powder"
+aisle = "épicerie"
+aliases = ["curry en poudre"]
+
+[cinnamon]
+fr = "Cannelle"
+en = "Cinnamon"
+aisle = "épicerie"
+
+[nutmeg]
+fr = "Noix de muscade"
+en = "Nutmeg"
+aisle = "épicerie"
+aliases = ["muscade"]
+
+[chili]
+fr = "Piment"
+en = "Chili"
+aisle = "épicerie"
+aliases = ["piment d'espelette"]
+
+[vanilla]
+fr = "Vanille"
+en = "Vanilla"
+aisle = "épicerie"
+aliases = ["sucre vanillé", "extrait de vanille"]
+
+[stock_cube]
+fr = "Bouillon"
+en = "Stock cube"
+aisle = "épicerie"
+aliases = ["cube de bouillon", "bouillon de légume", "bouillon de volaille"]
+
+[crushed_tomatoes]
+fr = "Tomates concassées"
+en = "Crushed tomatoes"
+aisle = "épicerie"
+aliases = ["tomate concassée", "tomates pelées", "pulpe de tomate"]
+
+[tomato_paste]
+fr = "Concentré de tomate"
+en = "Tomato paste"
+aisle = "épicerie"
+
+[tomato_sauce]
+fr = "Sauce tomate"
+en = "Tomato sauce"
+aisle = "épicerie"
+aliases = ["coulis de tomate", "passata"]
+
+[coconut_milk]
+fr = "Lait de coco"
+en = "Coconut milk"
+aisle = "épicerie"
+
+[olive]
+fr = "Olives"
+en = "Olives"
+aisle = "épicerie"
+aliases = ["olive"]
+
+[capers]
+fr = "Câpres"
+en = "Capers"
+aisle = "épicerie"
+aliases = ["câpre"]
+
+[pesto]
+fr = "Pesto"
+en = "Pesto"
+aisle = "épicerie"
+
+[walnut]
+fr = "Noix"
+en = "Walnuts"
+aisle = "épicerie"
+aliases = ["cerneaux de noix"]
+
+[almond]
+fr = "Amandes"
+en = "Almonds"
+aisle = "épicerie"
+aliases = ["amande", "poudre d'amande"]
+
+[hazelnut]
+fr = "Noisettes"
+en = "Hazelnuts"
+aisle = "épicerie"
+aliases = ["noisette"]
+
+[pine_nut]
+fr = "Pignons de pin"
+en = "Pine nuts"
+aisle = "épicerie"
+aliases = ["pignon"]
+
+[breadcrumbs]
+fr = "Chapelure"
+en = "Breadcrumbs"
+aisle = "épicerie"
+
+[crackers]
+fr = "Biscuits apéritif"
+en = "Crackers"
+aisle = "épicerie"
+
+[chips]
+fr = "Chips"
+en = "Crisps"
+aisle = "épicerie"
+
+[biscuits]
+fr = "Biscuits"
+en = "Biscuits"
+aisle = "épicerie"
+aliases = ["biscuit", "gâteaux secs"]
+
+[coffee]
+fr = "Café"
+en = "Coffee"
+aisle = "épicerie"
+
+[tea]
+fr = "Thé"
+en = "Tea"
+aisle = "épicerie"
+
+[bulgur]
+fr = "Boulgour"
+en = "Bulgur"
+aisle = "épicerie"
+
+[polenta]
+fr = "Polenta"
+en = "Polenta"
+aisle = "épicerie"
+
+[noodles]
+fr = "Nouilles"
+en = "Noodles"
+aisle = "épicerie"
+aliases = ["nouilles chinoises", "nouilles aux œufs"]
+
+[rice_noodles]
+fr = "Nouilles de riz"
+en = "Rice noodles"
+aisle = "épicerie"
+aliases = ["vermicelles de riz"]
+
+[sushi_rice]
+fr = "Riz à sushi"
+en = "Sushi rice"
+aisle = "épicerie"
+
+[cornstarch]
+fr = "Fécule de maïs"
+en = "Cornstarch"
+aisle = "épicerie"
+aliases = ["maïzena"]
+
+[wholemeal_flour]
+fr = "Farine complète"
+en = "Wholemeal flour"
+aisle = "épicerie"
+
+[buckwheat_flour]
+fr = "Farine de sarrasin"
+en = "Buckwheat flour"
+aisle = "épicerie"
+
+[maple_syrup]
+fr = "Sirop d'érable"
+en = "Maple syrup"
+aisle = "épicerie"
+
+[agave_syrup]
+fr = "Sirop d'agave"
+en = "Agave syrup"
+aisle = "épicerie"
+
+[milk_chocolate]
+fr = "Chocolat au lait"
+en = "Milk chocolate"
+aisle = "épicerie"
+
+[white_chocolate]
+fr = "Chocolat blanc"
+en = "White chocolate"
+aisle = "épicerie"
+
+[chocolate_chips]
+fr = "Pépites de chocolat"
+en = "Chocolate chips"
+aisle = "épicerie"
+
+[chocolate_spread]
+fr = "Pâte à tartiner"
+en = "Chocolate spread"
+aisle = "épicerie"
+aliases = ["nutella"]
+
+[peanut_butter]
+fr = "Beurre de cacahuète"
+en = "Peanut butter"
+aisle = "épicerie"
+aliases = ["beurre de cacahuètes"]
+
+[tahini]
+fr = "Tahini"
+en = "Tahini"
+aisle = "épicerie"
+aliases = ["crème de sésame", "tahin"]
+
+[condensed_milk]
+fr = "Lait concentré sucré"
+en = "Condensed milk"
+aisle = "épicerie"
+
+[dried_raisins]
+fr = "Raisins secs"
+en = "Raisins (dried)"
+aisle = "épicerie"
+
+[dried_apricot]
+fr = "Abricots secs"
+en = "Dried apricots"
+aisle = "épicerie"
+
+[dried_prunes]
+fr = "Pruneaux"
+en = "Dried prunes"
+aisle = "épicerie"
+
+[dried_cranberries]
+fr = "Cranberries séchées"
+en = "Dried cranberries"
+aisle = "épicerie"
+
+[peanuts]
+fr = "Cacahuètes"
+en = "Peanuts"
+aisle = "épicerie"
+aliases = ["arachides"]
+
+[cashews]
+fr = "Noix de cajou"
+en = "Cashews"
+aisle = "épicerie"
+
+[pistachios]
+fr = "Pistaches"
+en = "Pistachios"
+aisle = "épicerie"
+
+[pecans]
+fr = "Noix de pécan"
+en = "Pecans"
+aisle = "épicerie"
+
+[sunflower_seeds]
+fr = "Graines de tournesol"
+en = "Sunflower seeds"
+aisle = "épicerie"
+
+[pumpkin_seeds]
+fr = "Graines de courge"
+en = "Pumpkin seeds"
+aisle = "épicerie"
+
+[sesame_seeds]
+fr = "Graines de sésame"
+en = "Sesame seeds"
+aisle = "épicerie"
+aliases = ["sésame"]
+
+[chia_seeds]
+fr = "Graines de chia"
+en = "Chia seeds"
+aisle = "épicerie"
+aliases = ["chia"]
+
+[flax_seeds]
+fr = "Graines de lin"
+en = "Flaxseed"
+aisle = "épicerie"
+
+[desiccated_coconut]
+fr = "Noix de coco râpée"
+en = "Desiccated coconut"
+aisle = "épicerie"
+
+[white_beans]
+fr = "Haricots blancs"
+en = "White beans"
+aisle = "épicerie"
+
+[black_beans]
+fr = "Haricots noirs"
+en = "Black beans"
+aisle = "épicerie"
+
+[split_peas]
+fr = "Pois cassés"
+en = "Split peas"
+aisle = "épicerie"
+
+[sundried_tomatoes]
+fr = "Tomates séchées"
+en = "Sun-dried tomatoes"
+aisle = "épicerie"
+
+[gherkins]
+fr = "Cornichons"
+en = "Gherkins"
+aisle = "épicerie"
+
+[canned_corn]
+fr = "Maïs en boîte"
+en = "Canned sweetcorn"
+aisle = "épicerie"
+
+[artichoke_hearts]
+fr = "Cœurs d'artichaut"
+en = "Artichoke hearts"
+aisle = "épicerie"
+
+[curry_paste]
+fr = "Pâte de curry"
+en = "Curry paste"
+aisle = "épicerie"
+
+[harissa]
+fr = "Harissa"
+en = "Harissa"
+aisle = "épicerie"
+
+[sriracha]
+fr = "Sauce sriracha"
+en = "Sriracha"
+aisle = "épicerie"
+aliases = ["sriracha"]
+
+[hot_sauce]
+fr = "Sauce piquante"
+en = "Hot sauce"
+aisle = "épicerie"
+aliases = ["tabasco"]
+
+[worcestershire]
+fr = "Sauce Worcestershire"
+en = "Worcestershire sauce"
+aisle = "épicerie"
+
+[fish_sauce]
+fr = "Sauce poisson"
+en = "Fish sauce"
+aisle = "épicerie"
+aliases = ["nuoc-mâm", "nuoc mam"]
+
+[oyster_sauce]
+fr = "Sauce d'huître"
+en = "Oyster sauce"
+aisle = "épicerie"
+
+[barbecue_sauce]
+fr = "Sauce barbecue"
+en = "Barbecue sauce"
+aisle = "épicerie"
+aliases = ["sauce bbq"]
+
+[salad_dressing]
+fr = "Vinaigrette"
+en = "Salad dressing"
+aisle = "épicerie"
+
+[sesame_oil]
+fr = "Huile de sésame"
+en = "Sesame oil"
+aisle = "épicerie"
+
+[coconut_oil]
+fr = "Huile de coco"
+en = "Coconut oil"
+aisle = "épicerie"
+
+[rice_vinegar]
+fr = "Vinaigre de riz"
+en = "Rice vinegar"
+aisle = "épicerie"
+
+[turmeric]
+fr = "Curcuma"
+en = "Turmeric"
+aisle = "épicerie"
+
+[ginger_powder]
+fr = "Gingembre en poudre"
+en = "Ground ginger"
+aisle = "épicerie"
+
+[garlic_powder]
+fr = "Ail en poudre"
+en = "Garlic powder"
+aisle = "épicerie"
+
+[cayenne]
+fr = "Piment de Cayenne"
+en = "Cayenne pepper"
+aisle = "épicerie"
+
+[cardamom]
+fr = "Cardamome"
+en = "Cardamom"
+aisle = "épicerie"
+
+[cloves]
+fr = "Clous de girofle"
+en = "Cloves"
+aisle = "épicerie"
+aliases = ["clou de girofle"]
+
+[star_anise]
+fr = "Anis étoilé"
+en = "Star anise"
+aisle = "épicerie"
+aliases = ["badiane"]
+
+[saffron]
+fr = "Safran"
+en = "Saffron"
+aisle = "épicerie"
+
+[ras_el_hanout]
+fr = "Ras el hanout"
+en = "Ras el hanout"
+aisle = "épicerie"
+
+[garam_masala]
+fr = "Garam masala"
+en = "Garam masala"
+aisle = "épicerie"
+
+[coriander_seeds]
+fr = "Coriandre en graines"
+en = "Coriander seeds"
+aisle = "épicerie"
+
+[smoked_paprika]
+fr = "Paprika fumé"
+en = "Smoked paprika"
+aisle = "épicerie"
+
+[white_pepper]
+fr = "Poivre blanc"
+en = "White pepper"
+aisle = "épicerie"
+
+[gelatin]
+fr = "Gélatine"
+en = "Gelatine"
+aisle = "épicerie"
+aliases = ["feuille de gélatine"]
+
+[agar]
+fr = "Agar-agar"
+en = "Agar"
+aisle = "épicerie"
+
+[baking_soda]
+fr = "Bicarbonate de soude"
+en = "Baking soda"
+aisle = "épicerie"
+aliases = ["bicarbonate"]
+
+[muesli]
+fr = "Muesli"
+en = "Muesli"
+aisle = "épicerie"
+
+[granola]
+fr = "Granola"
+en = "Granola"
+aisle = "épicerie"
+
+[rice_cakes]
+fr = "Galettes de riz"
+en = "Rice cakes"
+aisle = "épicerie"
+
+[popcorn]
+fr = "Pop-corn"
+en = "Popcorn"
+aisle = "épicerie"
+aliases = ["maïs à pop-corn"]
+
+[pretzels]
+fr = "Bretzels"
+en = "Pretzels"
+aisle = "épicerie"
+
+[sweets]
+fr = "Bonbons"
+en = "Sweets"
+aisle = "épicerie"
+aliases = ["bonbon"]
+
+[tortilla_chips]
+fr = "Tortilla chips"
+en = "Tortilla chips"
+aisle = "épicerie"
+aliases = ["nachos"]
+
+[hot_chocolate]
+fr = "Chocolat en poudre"
+en = "Hot chocolate powder"
+aisle = "épicerie"
+
+[herbal_tea]
+fr = "Tisane"
+en = "Herbal tea"
+aisle = "épicerie"
+aliases = ["infusion"]
+
+[coffee_capsules]
+fr = "Capsules de café"
+en = "Coffee capsules"
+aisle = "épicerie"
+
+[canned_soup]
+fr = "Soupe en brique"
+en = "Boxed soup"
+aisle = "épicerie"
+aliases = ["soupe", "potage"]
+
+[nori]
+fr = "Algues nori"
+en = "Nori"
+aisle = "épicerie"
+aliases = ["nori"]
+
+[wasabi]
+fr = "Wasabi"
+en = "Wasabi"
+aisle = "épicerie"
+
+[panko]
+fr = "Panko"
+en = "Panko"
+aisle = "épicerie"
+
+# --- surgelés ---
+
+[frozen_vegetables]
+fr = "Légumes surgelés"
+en = "Frozen vegetables"
+aisle = "surgelés"
+
+[frozen_fries]
+fr = "Frites surgelées"
+en = "Frozen fries"
+aisle = "surgelés"
+aliases = ["frites"]
+
+[frozen_pizza]
+fr = "Pizza surgelée"
+en = "Frozen pizza"
+aisle = "surgelés"
+
+[ice_cream]
+fr = "Glace"
+en = "Ice cream"
+aisle = "surgelés"
+
+[frozen_spinach]
+fr = "Épinards surgelés"
+en = "Frozen spinach"
+aisle = "surgelés"
+
+[frozen_peas]
+fr = "Petits pois surgelés"
+en = "Frozen peas"
+aisle = "surgelés"
+
+[frozen_berries]
+fr = "Fruits rouges surgelés"
+en = "Frozen berries"
+aisle = "surgelés"
+
+[fish_fingers]
+fr = "Poisson pané"
+en = "Fish fingers"
+aisle = "surgelés"
+aliases = ["bâtonnets de poisson", "poisson pané surgelé"]
+
+[ice_cubes]
+fr = "Glaçons"
+en = "Ice cubes"
+aisle = "surgelés"
+
+[frozen_herbs]
+fr = "Herbes surgelées"
+en = "Frozen herbs"
+aisle = "surgelés"
+
+[edamame]
+fr = "Edamame"
+en = "Edamame"
+aisle = "surgelés"
+
+[chicken_nuggets]
+fr = "Nuggets de poulet"
+en = "Chicken nuggets"
+aisle = "surgelés"
+aliases = ["nuggets"]
+
+[sorbet]
+fr = "Sorbet"
+en = "Sorbet"
+aisle = "surgelés"
+
+# --- boissons ---
+
+[water]
+fr = "Eau"
+en = "Water"
+aisle = "boissons"
+aliases = ["eau minérale", "eau gazeuse"]
+
+[orange_juice]
+fr = "Jus d'orange"
+en = "Orange juice"
+aisle = "boissons"
+
+[fruit_juice]
+fr = "Jus de fruits"
+en = "Fruit juice"
+aisle = "boissons"
+aliases = ["jus"]
+
+[soda]
+fr = "Soda"
+en = "Soda"
+aisle = "boissons"
+aliases = ["coca", "limonade"]
+
+[beer]
+fr = "Bière"
+en = "Beer"
+aisle = "boissons"
+
+[red_wine]
+fr = "Vin rouge"
+en = "Red wine"
+aisle = "boissons"
+
+[white_wine]
+fr = "Vin blanc"
+en = "White wine"
+aisle = "boissons"
+
+[tonic]
+fr = "Tonic"
+en = "Tonic water"
+aisle = "boissons"
+
+[iced_tea]
+fr = "Thé glacé"
+en = "Iced tea"
+aisle = "boissons"
+aliases = ["ice tea"]
+
+[cordial]
+fr = "Sirop"
+en = "Cordial"
+aisle = "boissons"
+aliases = ["sirop de menthe", "sirop de grenadine"]
+
+[apple_juice]
+fr = "Jus de pomme"
+en = "Apple juice"
+aisle = "boissons"
+
+[cider]
+fr = "Cidre"
+en = "Cider"
+aisle = "boissons"
+
+[rose_wine]
+fr = "Vin rosé"
+en = "Rosé wine"
+aisle = "boissons"
+aliases = ["rosé"]
+
+[sparkling_wine]
+fr = "Vin mousseux"
+en = "Sparkling wine"
+aisle = "boissons"
+aliases = ["prosecco", "crémant"]
+
+[champagne]
+fr = "Champagne"
+en = "Champagne"
+aisle = "boissons"
+
+[rum]
+fr = "Rhum"
+en = "Rum"
+aisle = "boissons"
+
+[vodka]
+fr = "Vodka"
+en = "Vodka"
+aisle = "boissons"
+
+[whisky]
+fr = "Whisky"
+en = "Whisky"
+aisle = "boissons"
+aliases = ["whiskey"]
+
+[gin]
+fr = "Gin"
+en = "Gin"
+aisle = "boissons"
+
+[aperol]
+fr = "Aperol"
+en = "Aperol"
+aisle = "boissons"
+
+[alcohol_free_beer]
+fr = "Bière sans alcool"
+en = "Alcohol-free beer"
+aisle = "boissons"
+
+[kombucha]
+fr = "Kombucha"
+en = "Kombucha"
+aisle = "boissons"
+
+[energy_drink]
+fr = "Boisson énergisante"
+en = "Energy drink"
+aisle = "boissons"
+
+# --- maison ---
+
+[toilet_paper]
+fr = "Papier toilette"
+en = "Toilet paper"
+aisle = "maison"
+aliases = ["papier toillette", "pq"]
+
+[paper_towel]
+fr = "Essuie-tout"
+en = "Paper towels"
+aisle = "maison"
+aliases = ["sopalin"]
+
+[dish_soap]
+fr = "Liquide vaisselle"
+en = "Dish soap"
+aisle = "maison"
+
+[dishwasher_tablets]
+fr = "Pastilles lave-vaisselle"
+en = "Dishwasher tablets"
+aisle = "maison"
+
+[laundry]
+fr = "Lessive"
+en = "Laundry detergent"
+aisle = "maison"
+
+[sponge]
+fr = "Éponge"
+en = "Sponge"
+aisle = "maison"
+
+[trash_bags]
+fr = "Sacs poubelle"
+en = "Trash bags"
+aisle = "maison"
+aliases = ["sac poubelle"]
+
+[aluminium_foil]
+fr = "Papier aluminium"
+en = "Aluminium foil"
+aisle = "maison"
+aliases = ["papier alu"]
+
+[baking_paper]
+fr = "Papier cuisson"
+en = "Baking paper"
+aisle = "maison"
+
+[cling_film]
+fr = "Film alimentaire"
+en = "Cling film"
+aisle = "maison"
+
+[soap]
+fr = "Savon"
+en = "Soap"
+aisle = "maison"
+aliases = ["savon pour les mains"]
+
+[shower_gel]
+fr = "Gel douche"
+en = "Shower gel"
+aisle = "maison"
+
+[shampoo]
+fr = "Shampoing"
+en = "Shampoo"
+aisle = "maison"
+aliases = ["shampooing"]
+
+[toothpaste]
+fr = "Dentifrice"
+en = "Toothpaste"
+aisle = "maison"
+
+[tissues]
+fr = "Mouchoirs"
+en = "Tissues"
+aisle = "maison"
+aliases = ["mouchoir"]
+
+[cleaner]
+fr = "Nettoyant multi-usage"
+en = "All-purpose cleaner"
+aisle = "maison"
+aliases = ["produit ménager"]
+
+[toilet_cleaner]
+fr = "Nettoyant WC"
+en = "Toilet cleaner"
+aisle = "maison"
+
+[bleach]
+fr = "Javel"
+en = "Bleach"
+aisle = "maison"
+aliases = ["eau de javel"]
+
+[glass_cleaner]
+fr = "Nettoyant vitres"
+en = "Glass cleaner"
+aisle = "maison"
+
+[fabric_softener]
+fr = "Adoucissant"
+en = "Fabric softener"
+aisle = "maison"
+
+[dishwasher_salt]
+fr = "Sel lave-vaisselle"
+en = "Dishwasher salt"
+aisle = "maison"
+
+[rinse_aid]
+fr = "Liquide de rinçage"
+en = "Rinse aid"
+aisle = "maison"
+
+[cleaning_cloths]
+fr = "Lavettes"
+en = "Cleaning cloths"
+aisle = "maison"
+aliases = ["chiffon", "microfibre"]
+
+[light_bulbs]
+fr = "Ampoules"
+en = "Light bulbs"
+aisle = "maison"
+aliases = ["ampoule"]
+
+[batteries]
+fr = "Piles"
+en = "Batteries"
+aisle = "maison"
+
+[matches]
+fr = "Allumettes"
+en = "Matches"
+aisle = "maison"
+
+[freezer_bags]
+fr = "Sacs congélation"
+en = "Freezer bags"
+aisle = "maison"
+
+[paper_napkins]
+fr = "Serviettes en papier"
+en = "Paper napkins"
+aisle = "maison"
+
+[deodorant]
+fr = "Déodorant"
+en = "Deodorant"
+aisle = "maison"
+
+[toothbrush]
+fr = "Brosse à dents"
+en = "Toothbrush"
+aisle = "maison"
+
+[dental_floss]
+fr = "Fil dentaire"
+en = "Dental floss"
+aisle = "maison"
+
+[razors]
+fr = "Rasoirs"
+en = "Razors"
+aisle = "maison"
+
+[shaving_foam]
+fr = "Mousse à raser"
+en = "Shaving foam"
+aisle = "maison"
+
+[cotton_pads]
+fr = "Cotons démaquillants"
+en = "Cotton pads"
+aisle = "maison"
+aliases = ["coton"]
+
+[cotton_buds]
+fr = "Cotons-tiges"
+en = "Cotton buds"
+aisle = "maison"
+aliases = ["coton-tige"]
+
+[sunscreen]
+fr = "Crème solaire"
+en = "Sunscreen"
+aisle = "maison"
+
+[moisturizer]
+fr = "Crème hydratante"
+en = "Moisturizer"
+aisle = "maison"
+
+[conditioner]
+fr = "Après-shampoing"
+en = "Conditioner"
+aisle = "maison"
+
+[sanitary_pads]
+fr = "Serviettes hygiéniques"
+en = "Sanitary pads"
+aisle = "maison"
+
+[tampons]
+fr = "Tampons"
+en = "Tampons"
+aisle = "maison"
+
+[plasters]
+fr = "Pansements"
+en = "Plasters"
+aisle = "maison"
+
+[stain_remover]
+fr = "Détachant"
+en = "Stain remover"
+aisle = "maison"
+
+[descaler]
+fr = "Anticalcaire"
+en = "Descaler"
+aisle = "maison"
+aliases = ["détartrant"]
+
+[cat_litter]
+fr = "Litière"
+en = "Cat litter"
+aisle = "maison"
+
+[cat_food]
+fr = "Nourriture pour chat"
+en = "Cat food"
+aisle = "maison"
+aliases = ["croquettes chat"]
+
+[dog_food]
+fr = "Nourriture pour chien"
+en = "Dog food"
+aisle = "maison"
+aliases = ["croquettes chien"]
+
+[wet_wipes]
+fr = "Lingettes"
+en = "Wet wipes"
+aisle = "maison"
+
+# --- autre ---
+
+[flowers]
+fr = "Fleurs"
+en = "Flowers"
+aisle = "autre"
+aliases = ["bouquet"]

@@ -272,4 +272,4 @@ def test_shopping_is_strict_and_sorted_by_aisle(server):
     assert [(i["name"], i["aisle"]) for i in page["items"]] == [
         ("Tomate", "fruits et légumes"), ("Savon", "maison")]  # aisles from the file
     assert post("/api/shopping/add", {"name": "pierre", "quantity": 1})[0] == 400  # unknown
-    assert post("/api/products/request", {"name": "Tahini"})[0] == 200
+    assert post("/api/products/request", {"name": "Zaatar"})[0] == 200

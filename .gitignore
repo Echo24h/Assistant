@@ -4,7 +4,9 @@ __pycache__/
 *.pyc
 *.db
 *.sqlite
-data/
+# Personal data at the root (the real data lives in ~/.local/share/assistant).
+# Root only: assistant/data/ holds the product catalog, which IS versioned.
+/data/
 logs/
 token*.json
 credentials*.json

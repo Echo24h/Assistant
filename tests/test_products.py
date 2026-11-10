@@ -21,7 +21,7 @@ def test_names_find_their_product(written, key):
 
 
 def test_unknown_names_are_not_guessed():
-    for written in ["pierre", "tomat", "chocolat blanc", ""]:
+    for written in ["pierre", "tomat", "zaatar", ""]:
         assert catalog().find(written) is None
     assert catalog().closest("tomat", "fr") == ["Tomate"]  # names only, not English keys
 
@@ -63,14 +63,14 @@ def test_import_keeps_unknown_ingredients_as_text(data):
         "title": "Houmous", "servings": 4, "source_url": "https://example.com/houmous",
         "instructions": "1. Mixer.",
         "ingredients": [{"name": "pois chiches", "quantity": 400, "unit": "g"},
-                        {"name": "tahini", "quantity": 2, "unit": "tbsp"}]})
+                        {"name": "zaatar", "quantity": 2, "unit": "tbsp"}]})
     assert [i["name"] for i in recipe["ingredients"]] == ["Pois chiches"]
-    assert recipe["instructions"].endswith("Ingrédients non reconnus : tahini")
+    assert recipe["instructions"].endswith("Ingrédients non reconnus : zaatar")
 
 
 def test_requests_for_new_products(data):
-    request = data.products.request("Tahini", data.user.id)
-    assert data.products.requests()[0]["name"] == "Tahini"
+    request = data.products.request("Zaatar", data.user.id)
+    assert data.products.requests()[0]["name"] == "Zaatar"
     assert data.products.close_request(request["id"]) and data.products.requests() == []
     with pytest.raises(ValueError, match="already exists"):
         data.products.request("tomates", data.user.id)
