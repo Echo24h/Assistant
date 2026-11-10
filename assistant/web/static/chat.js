@@ -44,7 +44,11 @@ document.addEventListener("DOMContentLoaded", () => {
       return; // still busy until the agent's final reply
     }
     addMessage(event.type === "error" ? "error" : "bot", event.text || "");
-    if (event.tokens) addMeta(`tokens : ${event.tokens.in} entrée, ${event.tokens.out} sortie`);
+    if (event.tokens) {
+      const t = event.tokens;
+      addMeta(`ce message : ${t.in} entrée, ${t.out} sortie · ` +
+              `conversation : ${t.total_in} entrée, ${t.total_out} sortie`);
+    }
     setBusy(false);
   }
 

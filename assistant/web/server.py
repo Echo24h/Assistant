@@ -73,13 +73,18 @@ class Session:
             self.waiting_answer = False
 
     def _run(self, text: str) -> None:
+        before_in, before_out = self.agent.input_tokens, self.agent.output_tokens
         try:
             event = {"type": "reply", "text": self.agent.ask(text)}
         except anthropic.APIError as e:
             event = {"type": "error", "text": api_error_message(e)}
         except Exception as e:  # never leave the browser waiting forever
             event = {"type": "error", "text": f"Unexpected error: {e}"}
-        event["tokens"] = {"in": self.agent.input_tokens, "out": self.agent.output_tokens}
+        # This message alone, and the whole conversation so far.
+        event["tokens"] = {"in": self.agent.input_tokens - before_in,
+                           "out": self.agent.output_tokens - before_out,
+                           "total_in": self.agent.input_tokens,
+                           "total_out": self.agent.output_tokens}
         self.busy = False
         self.outbox.put(event)
 

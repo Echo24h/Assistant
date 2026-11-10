@@ -7,6 +7,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const title = document.getElementById("task-title");
   const due = document.getElementById("task-due");
   const showDone = document.getElementById("task-show-done");
+  const priority = document.getElementById("task-priority");
+
+  // A tap on the badge moves to the next priority: normal -> high -> low -> normal.
+  const LABELS = { high: "Haute", normal: "Normale", low: "Basse" };
+  const NEXT = { normal: "high", high: "low", low: "normal" };
 
   const today = new Date().toLocaleDateString("sv"); // "YYYY-MM-DD", local time
 
@@ -32,7 +37,14 @@ document.addEventListener("DOMContentLoaded", () => {
         load();
       });
 
-      item.append(box, el("span", "title", task.title));
+      const prio = el("button", "prio " + task.priority, LABELS[task.priority]);
+      prio.setAttribute("aria-label", "Priorité : " + LABELS[task.priority] + " (changer)");
+      prio.addEventListener("click", async () => {
+        await api("POST", "/api/tasks/priority", { id: task.id, priority: NEXT[task.priority] });
+        load();
+      });
+
+      item.append(box, el("span", "title", task.title), prio);
       if (task.due_date) {
         const late = !task.done && task.due_date < today;
         item.append(el("span", late ? "due late" : "due", formatDue(task.due_date)));
@@ -65,10 +77,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const result = await api("POST", "/api/tasks/add", {
       title: title.value.trim(),
       due_date: due.value || null,
+      priority: priority.value,
     });
     if (result.type === "error") return alert(result.text);
     title.value = "";
     due.value = "";
+    priority.value = "normal";
     load();
   });
 

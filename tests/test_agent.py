@@ -42,7 +42,7 @@ def make_agent(client, tmp_path, confirm=lambda q: True):
 
 def test_tool_call_then_answer(tmp_path):
     client = FakeClient([
-        reply("tool_use", tool_use("t1", "add_task", {"title": "Buy milk", "due_date": None})),
+        reply("tool_use", tool_use("t1", "add_task", {"title": "Buy milk", "due_date": None, "priority": "normal"})),
         reply("end_turn", text("Added.")),
     ])
     agent, store = make_agent(client, tmp_path)

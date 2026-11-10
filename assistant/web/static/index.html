@@ -34,6 +34,11 @@
   <form id="task-form" class="bar top">
     <input id="task-title" placeholder="Nouvelle tâche…" maxlength="200" autocomplete="off" required>
     <input id="task-due" type="date" aria-label="Échéance">
+    <select id="task-priority" aria-label="Priorité">
+      <option value="high">🔴 Haute</option>
+      <option value="normal" selected>Normale</option>
+      <option value="low">Basse</option>
+    </select>
     <button type="submit">Ajouter</button>
   </form>
   <label class="toggle"><input id="task-show-done" type="checkbox"> Afficher les tâches terminées</label>

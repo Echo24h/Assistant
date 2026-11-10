@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     title      TEXT NOT NULL,
     due_date   TEXT,               -- ISO date (YYYY-MM-DD) or NULL
     done       INTEGER NOT NULL DEFAULT 0,
+    priority   TEXT NOT NULL DEFAULT 'normal',  -- high, normal or low
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE TABLE IF NOT EXISTS workouts (
@@ -21,6 +22,16 @@ CREATE TABLE IF NOT EXISTS workouts (
 );
 """
 
+PRIORITIES = ("high", "normal", "low")
+# Sort order: high first. CASE turns the word into a number for ORDER BY.
+PRIORITY_ORDER = "CASE priority WHEN 'high' THEN 0 WHEN 'normal' THEN 1 ELSE 2 END"
+TASK_COLUMNS = "id, title, due_date, priority, done"
+
+
+def check_priority(priority: str) -> None:
+    if priority not in PRIORITIES:
+        raise ValueError(f"priority must be one of {PRIORITIES}")
+
 
 class Store:
     def __init__(self, db_path: Path | str):
@@ -29,30 +40,49 @@ class Store:
         self.conn = sqlite3.connect(db_path, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row  # rows behave like dicts
         self.conn.executescript(SCHEMA)
+        self._migrate()
+
+    def _migrate(self) -> None:
+        """Upgrade a database created by an older version (keeps the data)."""
+        columns = [row["name"] for row in self.conn.execute("PRAGMA table_info(tasks)")]
+        if "priority" not in columns:
+            self.conn.execute(
+                "ALTER TABLE tasks ADD COLUMN priority TEXT NOT NULL DEFAULT 'normal'")
+            self.conn.commit()
 
     # --- tasks ---
 
-    def add_task(self, title: str, due_date: str | None) -> dict:
+    def add_task(self, title: str, due_date: str | None, priority: str = "normal") -> dict:
         if due_date:
             date.fromisoformat(due_date)  # raises ValueError on a bad date
+        check_priority(priority)
         cur = self.conn.execute(
-            "INSERT INTO tasks (title, due_date) VALUES (?, ?)", (title, due_date)
+            "INSERT INTO tasks (title, due_date, priority) VALUES (?, ?, ?)",
+            (title, due_date, priority),
         )
         self.conn.commit()
-        return {"id": cur.lastrowid, "title": title, "due_date": due_date}
+        return {"id": cur.lastrowid, "title": title, "due_date": due_date, "priority": priority}
 
     def list_tasks(self, include_done: bool) -> list[dict]:
-        sql = "SELECT id, title, due_date, done FROM tasks"
+        """Most important first, then the closest due date."""
+        sql = f"SELECT {TASK_COLUMNS} FROM tasks"
         if not include_done:
             sql += " WHERE done = 0"
-        sql += " ORDER BY due_date IS NULL, due_date, id"
+        sql += f" ORDER BY {PRIORITY_ORDER}, due_date IS NULL, due_date, id"
         return [dict(row) for row in self.conn.execute(sql)]
 
     def get_task(self, task_id: int) -> dict | None:
         row = self.conn.execute(
-            "SELECT id, title, due_date, done FROM tasks WHERE id = ?", (task_id,)
+            f"SELECT {TASK_COLUMNS} FROM tasks WHERE id = ?", (task_id,)
         ).fetchone()
         return dict(row) if row else None
+
+    def set_priority(self, task_id: int, priority: str) -> bool:
+        check_priority(priority)
+        cur = self.conn.execute(
+            "UPDATE tasks SET priority = ? WHERE id = ?", (priority, task_id))
+        self.conn.commit()
+        return cur.rowcount == 1
 
     def complete_task(self, task_id: int) -> bool:
         cur = self.conn.execute("UPDATE tasks SET done = 1 WHERE id = ?", (task_id,))

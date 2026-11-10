@@ -9,6 +9,8 @@ Identity and CSRF checks still apply (web/server.py does them first).
 import threading
 from datetime import date
 
+from ..services.store import PRIORITIES
+
 
 class BadRequest(ValueError):
     """Invalid input from the page (answered with HTTP 400)."""
@@ -36,7 +38,11 @@ class TasksAPI:
                 due = data.get("due_date") or None
                 if due is not None:
                     check_date(due)
-                return self.store.add_task(title.strip(), due)
+                return self.store.add_task(title.strip(), due,
+                                           priority_of(data, default="normal"))
+
+            if path == "/api/tasks/priority":
+                return {"ok": self.store.set_priority(task_id_of(data), priority_of(data))}
 
             if path == "/api/tasks/done":
                 task_id, done = task_id_of(data), data.get("done")
@@ -55,6 +61,13 @@ def task_id_of(data: dict) -> int:
     if type(task_id) is not int:  # not isinstance: True/False are ints in Python
         raise BadRequest("id: an integer")
     return task_id
+
+
+def priority_of(data: dict, default: str | None = None) -> str:
+    priority = data.get("priority", default)
+    if priority not in PRIORITIES:
+        raise BadRequest(f"priority: one of {', '.join(PRIORITIES)}")
+    return priority
 
 
 def check_date(value) -> None:

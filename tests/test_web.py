@@ -69,7 +69,9 @@ ME = {"Tailscale-User-Login": "me@gmail.com"}
 
 def test_allowed_user_can_chat(server):
     assert call(server, "/api/ask", headers=ME) == (200, {"type": "reply", "text": "echo: hi",
-                                                          "tokens": {"in": 0, "out": 0}})
+                                                          "tokens": {"in": 0, "out": 0,
+                                                                     "total_in": 0,
+                                                                     "total_out": 0}})
 
 
 def test_unknown_or_missing_login_is_refused(server):
@@ -107,6 +109,9 @@ def test_tasks_tab_without_model(server):
     assert post("/api/tasks/done", {"id": task["id"], "done": True}) == (200, {"ok": True})
     assert tasks() == [] and len(tasks("?all=1")) == 1
     assert post("/api/tasks/done", {"id": task["id"], "done": False}) == (200, {"ok": True})
+    assert task["priority"] == "normal"  # default from the page
+    assert post("/api/tasks/priority", {"id": task["id"], "priority": "high"}) == (200, {"ok": True})
+    assert tasks()[0]["priority"] == "high"
     assert post("/api/tasks/delete", {"id": task["id"]}) == (200, {"ok": True})
     assert tasks("?all=1") == []
 
@@ -119,6 +124,8 @@ def test_tasks_tab_rejects_bad_input(server):
     assert status("/api/tasks/add", {"title": "x", "due_date": "tomorrow"}) == 400
     assert status("/api/tasks/done", {"id": True, "done": True}) == 400  # bool is not an id
     assert status("/api/tasks/delete", {"id": "1"}) == 400
+    assert status("/api/tasks/add", {"title": "x", "priority": "urgent!!"}) == 400
+    assert status("/api/tasks/priority", {"id": 1}) == 400  # priority missing
 
 
 def test_tasks_need_identity(server):

@@ -17,7 +17,8 @@ body {
   font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   display: flex; flex-direction: column;
 }
-button, input, textarea { font: inherit; color: inherit; }
+:root { color-scheme: light dark; }  /* native controls (date, select) follow the theme */
+button, input, textarea, select { font: inherit; color: inherit; }
 
 /* Header and tabs */
 header {
@@ -66,8 +67,17 @@ nav button[aria-selected="true"] { background: var(--bg); color: var(--text); }
   padding: 10px 12px; background: var(--bg); min-width: 0;
 }
 .bar textarea { flex: 1; resize: none; max-height: 140px; }
+#task-form { flex-wrap: wrap; }
 #task-title { flex: 1; }
 #task-due { width: 9.5em; }
+@media (max-width: 600px) {  /* phone: title on its own line, the rest below */
+  #task-title { flex-basis: 100%; }
+  #task-due { flex: 1; width: auto; }
+}
+#task-priority {
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 10px 12px; background: var(--bg);
+}
 .bar button {
   border: 0; border-radius: 12px; padding: 0 16px;
   background: var(--me); color: var(--me-text);
@@ -87,4 +97,10 @@ nav button[aria-selected="true"] { background: var(--bg); color: var(--text); }
 #task-list .done .title { text-decoration: line-through; color: var(--muted); }
 #task-list .due { font-size: 13px; color: var(--muted); white-space: nowrap; }
 #task-list .late { color: var(--no); font-weight: 600; }
+#task-list .prio {
+  border: 1px solid var(--border); background: transparent; border-radius: 999px;
+  padding: 2px 8px; font-size: 12px; color: var(--muted); white-space: nowrap;
+}
+#task-list .prio.high { border-color: var(--no); color: var(--no); font-weight: 600; }
+#task-list .prio.low { opacity: .6; }
 #task-list .delete { border: 0; background: transparent; color: var(--muted); font-size: 20px; padding: 0 4px; }
