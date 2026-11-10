@@ -23,6 +23,16 @@ function el(tag, className, text) {
   return node;
 }
 
+// "1000 g" -> "1 kg", "2.5" -> "2,5", "tbsp" -> "c. à soupe". Empty if no quantity.
+const UNIT_LABELS = { tsp: "c. à café", tbsp: "c. à soupe" };
+function formatAmount(quantity, unit) {
+  if (quantity === null || quantity === undefined) return "";
+  if (unit === "g" && quantity >= 1000) { quantity /= 1000; unit = "kg"; }
+  if (unit === "ml" && quantity >= 1000) { quantity /= 1000; unit = "l"; }
+  const number = Number(quantity.toFixed(2)).toLocaleString("fr-FR");
+  return unit ? `${number} ${UNIT_LABELS[unit] || unit}` : number;
+}
+
 // Tabs: show one view, hide the others. Each view can react to being shown.
 const onShow = {};
 function showView(name) {

@@ -95,9 +95,15 @@ sudo tailscale serve --bg 8765   # HTTPS, visible only to my own devices
 - Confirmations appear as ✅ / ❌ buttons; replies are inserted as text,
   never HTML, and the Content-Security-Policy forbids inline scripts, so
   email content cannot inject code into the page.
-- Two tabs: **Chat** (the agent, costs tokens) and **Tasks** (the to-do
-  list read and changed directly in the database: no model, 0 tokens).
-  Confirmations guard the model's decisions; a click is the user's own.
+- Tabs: **Chat** (the agent, costs tokens), and **Tasks**, **Recipes**,
+  **Shopping** (read and changed directly in the database: no model,
+  0 tokens). Confirmations guard the model's decisions; a click is the
+  user's own.
+- Recipe import from a link reads the standard schema.org data of the
+  page, without the model. The model has no internet tool. The download
+  is protected against SSRF: http(s) and ports 80/443 only, public
+  addresses only (checked at every redirect), and the connection goes to
+  the address that was checked (no DNS rebinding).
 - To run it on a server: `deploy/assistant-web.service`.
 
 ## Run it
@@ -116,9 +122,10 @@ assistant/
   services/   the core: data and Google access, no AI, no web
               db.py + migrations/   SQLite, numbered SQL files
               household.py          entry point: what one person can see
-              users.py, tasks.py    one module per domain
-              google/               the only code talking to the outside:
-                                    auth.py, calendar.py, gmail.py
+              users.py, tasks.py,   one module per domain
+              recipes.py, shopping.py
+              google/               code talking to the outside: auth.py,
+              recipe_import.py      calendar.py, gmail.py; recipe downloads
   agent/      the AI: loop.py (the hand-written agent loop) and tools/
               (one module per domain; tools/__init__.py = allowlist + confirmation)
   web/        the platform: server.py (identity, CSRF) and static/ (phone page)
@@ -140,5 +147,7 @@ printf '#!/bin/sh\nexec gitleaks protect --staged --redact -c .gitleaks.toml\n' 
 - [x] Gmail read-only (content never logged), morning brief
 - [x] Phone access: private web page through Tailscale
 - [x] Tasks tab without the model (0 tokens), task priorities
+- [x] Household database (migrations, users, shared or private tasks)
+- [x] Recipes and shared shopping list (scaled, added up), import by link
 - [ ] Evaluation on synthetic emails
 - [ ] Email drafts with confirmation

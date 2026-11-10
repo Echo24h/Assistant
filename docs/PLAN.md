@@ -224,9 +224,9 @@ expense_shares(expense_id → expenses CASCADE, user_id → users, amount_cents)
   `127.0.0.1`, `192.168.x`, `100.x` Tailscale…), taille et délai limités.
 
 Étapes :
-1. Fondations : `db.py` + migrations, `users`, tâches commune/perso,
+1. Fondations (**fait**) : `db.py` + migrations, `users`, tâches commune/perso,
    un module par domaine ; comportement inchangé.
-2. Recettes et liste de courses (outils + onglet).
+2. Recettes et liste de courses (outils + onglets) : **fait**.
 3. Finances (outils + onglet, solde).
 4. Accès de ma copine (Tailscale, outils selon la personne, tâche perso).
 

@@ -162,3 +162,28 @@ def test_only_the_owner_gets_google(monkeypatch):
     for login in users:
         app.session(app.user({"Tailscale-User-Login": login}))
     assert given == {"Grégory": ("my calendar", "my gmail"), "Anna": (None, None)}
+
+
+def test_recipes_and_shopping_tabs(server):
+    def post(path, data):
+        return call(server, path, body=json.dumps(data).encode(), headers=ME)
+
+    status, recipe = post("/api/recipes/add", {
+        "title": "Pâtes", "servings": 2, "ingredients": "500 g de pâtes\n\n4 tomates\nsel",
+        "instructions": "Cuire."})
+    assert status == 200 and len(recipe["ingredients"]) == 3  # the empty line is skipped
+    listed = json.loads(get(server, "/api/recipes")[2])["recipes"]
+    assert listed == [{"id": recipe["id"], "title": "Pâtes", "servings": 2}]
+    assert json.loads(get(server, f"/api/recipes/get?id={recipe['id']}")[2])["title"] == "Pâtes"
+    assert get(server, "/api/recipes/get?id=abc")[0] == 400
+
+    assert post("/api/recipes/shop", {"id": recipe["id"], "servings": 4}) == (200, {"added": 3})
+    status, milk = post("/api/shopping/add", {"text": "2 l de lait"})
+    assert milk["quantity"] == 2000 and milk["unit"] == "ml"
+    items = json.loads(get(server, "/api/shopping")[2])["items"]
+    assert {i["name"]: i["quantity"] for i in items}["pâtes"] == 1000
+
+    assert post("/api/shopping/check", {"id": milk["id"], "checked": True})[0] == 200
+    assert post("/api/shopping/clear", {}) == (200, {"removed": 1})
+    assert post("/api/recipes/add", {"title": "x", "servings": 2, "ingredients": ""})[0] == 400
+    assert post("/api/recipes/import", {"url": "http://127.0.0.1/"})[0] == 400  # SSRF

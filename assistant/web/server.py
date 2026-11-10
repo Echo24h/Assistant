@@ -31,7 +31,10 @@ import anthropic
 
 from ..app import api_error_message, build_agent, open_database
 from ..services.users import User
-from .api import SharedDB, TasksAPI
+from .api import SharedDB
+from .recipes_api import RecipesAPI
+from .shopping_api import ShoppingAPI
+from .tasks_api import TasksAPI
 
 STATIC_DIR = Path(__file__).parent / "static"
 # The only files the server will ever send: URL path -> (file, content type).
@@ -41,11 +44,13 @@ STATIC = {
     "/app.js": ("app.js", "text/javascript; charset=utf-8"),
     "/chat.js": ("chat.js", "text/javascript; charset=utf-8"),
     "/tasks.js": ("tasks.js", "text/javascript; charset=utf-8"),
+    "/recipes.js": ("recipes.js", "text/javascript; charset=utf-8"),
+    "/shopping.js": ("shopping.js", "text/javascript; charset=utf-8"),
 }
 # No inline script or style is allowed: even injected HTML could not run code.
 CSP = ("default-src 'self'; frame-ancestors 'none'; base-uri 'none'; "
        "form-action 'self'; object-src 'none'")
-MAX_BODY = 10_000  # bytes: a chat message, not a file upload
+MAX_BODY = 64_000  # bytes: a chat message or a typed recipe, not a file upload
 ANSWER_TIMEOUT = 300  # seconds to answer a confirmation, then it counts as "no"
 TURN_TIMEOUT = 600  # seconds max for one agent turn
 
@@ -128,7 +133,16 @@ class App:
         self.db = SharedDB(conn)  # one connection + one lock for all the web APIs
         self.sessions: dict[str, Session] = {}
         self.lock = threading.Lock()  # protects self.sessions
-        self.tasks = TasksAPI(self.db)  # direct features, no model
+        # Direct features, no model: one API per domain (web/*_api.py).
+        self.apis = [TasksAPI(self.db), RecipesAPI(self.db), ShoppingAPI(self.db)]
+
+    def direct(self, method: str, user: User, path: str, payload: dict) -> dict | None:
+        """Ask each domain API in turn; None if no API knows this path."""
+        for api in self.apis:
+            result = getattr(api, method)(user, path, payload)
+            if result is not None:
+                return result
+        return None
 
     def user(self, headers) -> User | None:
         """The allowed user making this request, or None."""
@@ -162,7 +176,14 @@ def make_handler(app: App):
             if url.path in STATIC:
                 return self.send_static(*STATIC[url.path])
             query = {k: v[0] for k, v in parse_qs(url.query).items()}
-            result = app.tasks.get(user, url.path, query)
+            self.send_direct(lambda: app.direct("get", user, url.path, query))
+
+        def send_direct(self, call) -> None:
+            """Answer a direct feature: its result, 400 for a refused input, or 404."""
+            try:
+                result = call()
+            except ValueError as e:  # BadRequest, or a rule of services/
+                return self.send_json({"error": str(e)}, HTTPStatus.BAD_REQUEST)
             if result is None:
                 return self.send_json({"error": "not found"}, HTTPStatus.NOT_FOUND)
             self.send_json(result)
@@ -194,13 +215,8 @@ def make_handler(app: App):
             elif self.path == "/api/reset":
                 app.session(user, new=True)
                 event = {"type": "reset", "name": user.name}
-            else:  # direct features (web/api.py)
-                try:
-                    event = app.tasks.post(user, self.path, data)
-                except ValueError as e:  # BadRequest, or a rule of services/
-                    return self.send_json({"error": str(e)}, HTTPStatus.BAD_REQUEST)
-                if event is None:
-                    return self.send_json({"error": "not found"}, HTTPStatus.NOT_FOUND)
+            else:  # direct features (web/*_api.py)
+                return self.send_direct(lambda: app.direct("post", user, self.path, data))
             self.send_json(event)
 
         def same_origin(self) -> bool:

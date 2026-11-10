@@ -10,14 +10,19 @@
 <script src="/app.js" defer></script>
 <script src="/chat.js" defer></script>
 <script src="/tasks.js" defer></script>
+<script src="/recipes.js" defer></script>
+<script src="/shopping.js" defer></script>
 </head>
 <body>
 <header>
   <nav role="tablist">
     <button role="tab" data-view="chat" aria-selected="true">Chat</button>
     <button role="tab" data-view="tasks" aria-selected="false">Tâches</button>
+    <button role="tab" data-view="recipes" aria-selected="false">Recettes</button>
+    <button role="tab" data-view="shopping" aria-selected="false">Courses</button>
   </nav>
-  <button id="reset" type="button" class="small">Nouvelle conversation</button>
+  <button id="reset" type="button" class="small" title="Nouvelle conversation"
+          aria-label="Nouvelle conversation">↺</button>
 </header>
 
 <!-- Chat with the agent (uses the model, costs tokens) -->
@@ -42,8 +47,45 @@
     <button type="submit">Ajouter</button>
   </form>
   <label class="toggle"><input id="task-show-done" type="checkbox"> Afficher les tâches terminées</label>
-  <ul id="task-list"></ul>
+  <ul id="task-list" class="list"></ul>
   <p id="task-empty" class="meta" hidden>Aucune tâche 🎉</p>
+</section>
+
+<!-- Recipes, shared by the household (no model, 0 tokens) -->
+<section id="view-recipes" class="view" hidden>
+  <form id="import-form" class="bar top">
+    <input id="import-url" type="url" placeholder="Lien d'une recette…" required>
+    <button type="submit">Importer</button>
+  </form>
+  <div class="scroll">
+    <details id="recipe-new" class="card">
+      <summary>✍️ Écrire une recette</summary>
+      <form id="recipe-form" class="stack">
+        <input id="recipe-title" placeholder="Titre" maxlength="200" required>
+        <label>Pour <input id="recipe-servings" type="number" min="1" max="100" value="2" required> personnes</label>
+        <textarea id="recipe-ingredients" rows="6" required
+                  placeholder="Un ingrédient par ligne :&#10;500 g de pâtes&#10;4 tomates&#10;sel"></textarea>
+        <textarea id="recipe-instructions" rows="5" placeholder="Étapes (facultatif)"></textarea>
+        <button type="submit">Enregistrer</button>
+      </form>
+    </details>
+    <ul id="recipe-list" class="list"></ul>
+    <p id="recipe-empty" class="meta" hidden>Aucune recette : importe un lien, écris-en une,
+      ou demande une idée dans le chat.</p>
+  </div>
+</section>
+
+<!-- Shopping list, shared by the household (no model, 0 tokens) -->
+<section id="view-shopping" class="view" hidden>
+  <form id="shop-form" class="bar top">
+    <input id="shop-text" placeholder="2 l de lait, 6 œufs…" maxlength="150" autocomplete="off" required>
+    <button type="submit">Ajouter</button>
+  </form>
+  <div class="scroll">
+    <ul id="shop-list" class="list"></ul>
+    <p id="shop-empty" class="meta" hidden>Liste vide.</p>
+    <button id="shop-clear" type="button" class="small center" hidden>Retirer les articles cochés</button>
+  </div>
 </section>
 </body>
 </html>
