@@ -21,6 +21,10 @@ class FakeAgent:
     def __init__(self, confirm):
         self.confirm = confirm
         self.input_tokens = self.output_tokens = 0
+        self.closed = False
+
+    def close(self):
+        self.closed = True
 
     def ask(self, text):
         if "delete" in text:
@@ -42,6 +46,9 @@ def test_session_confirmation_round_trip():
     assert session.answer(False)["text"] == "Kept."
 
     assert session.answer(True)["type"] == "error"  # no question waiting
+
+    session.close()
+    assert session.agent.closed  # its database connection is released
 
 
 @pytest.fixture

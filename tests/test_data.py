@@ -7,9 +7,8 @@ from datetime import date
 import pytest
 
 from assistant.agent.tools import ToolBox, ToolError
-from assistant.services.data import user_data
+from assistant.services.data import open_household, user_data
 from assistant.services.db import connect, migrations
-from assistant.services.users import sync_users
 from helpers import household
 
 
@@ -71,10 +70,14 @@ def test_workouts_are_personal():
     assert user_data(conn, her).workouts.list(30, today=date(2026, 11, 10)) == []
 
 
-def test_bad_date_is_a_tool_error(data):
+def test_rules_apply_to_the_agent_too(data):
     box = ToolBox(data, confirm=lambda q: True)
     with pytest.raises(ToolError):
         box.run("add_task", {"title": "x", "due_date": "next week", "priority": "normal"})
+    with pytest.raises(ToolError, match="title"):
+        box.run("add_task", {"title": "  ", "due_date": None, "priority": "normal"})
+    with pytest.raises(ToolError, match="title"):
+        box.run("add_task", {"title": "x" * 201, "due_date": None, "priority": "normal"})
 
 
 def test_unknown_tool_is_refused(data):
@@ -123,8 +126,7 @@ def test_database_from_before_migrations_keeps_its_data(tmp_path):
     """)
     old.close()
 
-    conn = connect(db)
-    owner = sync_users(conn, {"me@x.com": "Grégory"})
+    conn, owner = open_household(db, {"me@x.com": "Grégory"})
     data = user_data(conn, owner)
     task = data.tasks.list(False)[0]
     assert (task["title"], task["priority"], task["private"]) == ("Old task", "high", 0)

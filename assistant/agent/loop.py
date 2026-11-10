@@ -58,6 +58,10 @@ class Agent:
         self.input_tokens = 0
         self.output_tokens = 0
 
+    def close(self) -> None:
+        """Release what the tools hold (the database connection)."""
+        self.toolbox.close()
+
     def ask(self, user_text: str) -> str:
         """Handle one user message; return the assistant's final text."""
         turn_start = len(self.messages)

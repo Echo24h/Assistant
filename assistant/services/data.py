@@ -7,18 +7,33 @@ Later: recipes, shopping, finances.
 
 import sqlite3
 from dataclasses import dataclass
+from pathlib import Path
 
+from .db import connect
 from .tasks import Tasks
-from .users import User
-from .workouts import Workouts
+from .users import User, sync_users
+from .workouts import Workouts, give_old_workouts_to
+
+
+def open_household(path: Path | str, people: dict[str, str]):
+    """Open and upgrade the database, sync the people; return (conn, owner)."""
+    conn = connect(path)
+    owner = sync_users(conn, people)
+    give_old_workouts_to(conn, owner)  # rows from before users existed
+    return conn, owner
 
 
 @dataclass(frozen=True)
 class UserData:
+    conn: sqlite3.Connection
     user: User
     tasks: Tasks
     workouts: Workouts
 
+    def close(self) -> None:
+        """Close the connection, when this data has its own (app.build_agent)."""
+        self.conn.close()
+
 
 def user_data(conn: sqlite3.Connection, user: User) -> UserData:
-    return UserData(user=user, tasks=Tasks(conn, user), workouts=Workouts(conn, user))
+    return UserData(conn=conn, user=user, tasks=Tasks(conn, user), workouts=Workouts(conn, user))

@@ -10,9 +10,9 @@ from .agent.tools import ToolBox
 from .services.gmail import Gmail
 from .services.google_auth import LoginRequired, get_credentials, google_service
 from .services.google_calendar import Calendar
-from .services.data import user_data
+from .services.data import open_household, user_data
 from .services.db import connect
-from .services.users import User, sync_users
+from .services.users import User
 
 
 def connect_google(cfg, interactive: bool):
@@ -33,8 +33,7 @@ def connect_google(cfg, interactive: bool):
 
 def open_database(cfg):
     """Open (and upgrade) the database, sync the household; return (conn, owner)."""
-    conn = connect(cfg.db_path)
-    return conn, sync_users(conn, cfg.people)
+    return open_household(cfg.db_path, cfg.people)
 
 
 def build_agent(cfg, confirm, user: User, calendar, gmail) -> Agent:

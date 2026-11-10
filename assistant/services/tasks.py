@@ -11,6 +11,7 @@ from datetime import date
 from .users import User
 
 PRIORITIES = ("high", "normal", "low")
+MAX_TITLE = 200
 # Most important first: CASE turns the word into a number for ORDER BY.
 PRIORITY_ORDER = "CASE priority WHEN 'high' THEN 0 WHEN 'normal' THEN 1 ELSE 2 END"
 COLUMNS = "id, title, due_date, priority, done, owner_id IS NOT NULL AS private"
@@ -29,6 +30,9 @@ class Tasks:
 
     def add(self, title: str, due_date: str | None, priority: str = "normal",
             private: bool = False) -> dict:
+        title = title.strip()
+        if not 0 < len(title) <= MAX_TITLE:
+            raise ValueError(f"title: 1 to {MAX_TITLE} characters")
         if due_date:
             date.fromisoformat(due_date)  # raises ValueError on a bad date
         check_priority(priority)

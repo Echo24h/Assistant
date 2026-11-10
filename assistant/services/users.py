@@ -30,10 +30,7 @@ def sync_users(conn: sqlite3.Connection, people: dict[str, str]) -> User:
                 "ON CONFLICT (login) DO UPDATE SET name = excluded.name",
                 (login, name),
             )
-        owner = get_user(conn, next(iter(people)))
-        # Workouts logged before users existed belong to the owner.
-        conn.execute("UPDATE workouts SET user_id = ? WHERE user_id IS NULL", (owner.id,))
-    return owner
+    return get_user(conn, next(iter(people)))
 
 
 def get_user(conn: sqlite3.Connection, login: str) -> User | None:

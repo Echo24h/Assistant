@@ -6,7 +6,7 @@ Safety rules enforced here, in code (not in the prompt):
 - CONFIRMATION: tools listed in a domain's NEEDS_CONFIRMATION only run if
   the user says yes. Obvious mistakes are caught before asking (check).
 
-Each domain (tasks.py, calendar.py, gmail.py) brings its own tools; later,
+Each domain (tasks.py, workouts.py, calendar.py, gmail.py) brings its own tools; later,
 the domains given to the ToolBox can depend on who is talking.
 """
 
@@ -16,6 +16,7 @@ from typing import Callable
 from . import calendar as calendar_tools
 from . import gmail as gmail_tools
 from . import tasks as task_tools
+from . import workouts as workout_tools
 
 # A function that shows a question to the user and returns True for "yes".
 ConfirmFn = Callable[[str], bool]
@@ -28,6 +29,7 @@ class ToolError(Exception):
 class ToolBox:
     def __init__(self, data, confirm: ConfirmFn, calendar=None, gmail=None):
         """data: services.data.UserData, what this person can see and change."""
+        self.data = data
         self.confirm = confirm
         self.definitions = []  # what the model is told it can call
         self.functions = {}  # name -> Python function. This dict IS the allowlist.
@@ -36,12 +38,16 @@ class ToolBox:
         self.owner = {}  # name -> (domain module, service), for check/describe
 
         self._add(task_tools, data)
+        self._add(workout_tools, data)
         if calendar is not None:
             self._add(calendar_tools, calendar)
         if gmail is not None:
             self._add(gmail_tools, gmail)
 
         assert set(self.functions) == {t["name"] for t in self.definitions}
+
+    def close(self) -> None:
+        self.data.close()
 
     def _add(self, domain, service) -> None:
         functions = domain.functions(service)

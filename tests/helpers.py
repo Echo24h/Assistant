@@ -1,16 +1,14 @@
 """A fresh in-memory database with a household, for tests."""
 
-from assistant.services.data import UserData, user_data
-from assistant.services.db import connect
-from assistant.services.users import get_user, sync_users
+from assistant.services.data import UserData, open_household, user_data
+from assistant.services.users import get_user
 
 PEOPLE = {"me@x.com": "Grégory", "her@x.com": "Anna"}
 
 
 def household():
     """(conn, me, her) on a new in-memory database."""
-    conn = connect(":memory:")
-    sync_users(conn, PEOPLE)
+    conn, _ = open_household(":memory:", PEOPLE)
     return conn, get_user(conn, "me@x.com"), get_user(conn, "her@x.com")
 
 

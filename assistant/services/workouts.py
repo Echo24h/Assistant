@@ -6,6 +6,12 @@ from datetime import date, timedelta
 from .users import User
 
 
+def give_old_workouts_to(conn: sqlite3.Connection, owner: User) -> None:
+    """Workouts logged before users existed (user_id NULL) belong to the owner."""
+    with conn:
+        conn.execute("UPDATE workouts SET user_id = ? WHERE user_id IS NULL", (owner.id,))
+
+
 class Workouts:
     def __init__(self, conn: sqlite3.Connection, user: User):
         self.conn = conn

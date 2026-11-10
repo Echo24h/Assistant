@@ -1,4 +1,4 @@
-"""To-do list and training log tools (services/tasks.py, services/workouts.py).
+"""To-do list tools (services/tasks.py).
 
 Each tool module gives the ToolBox (tools/__init__.py) the same things:
 DEFINITIONS (JSON schemas for the model), functions() (name -> Python
@@ -81,36 +81,6 @@ DEFINITIONS = [
             "additionalProperties": False,
         },
     },
-    {
-        "name": "log_workout",
-        "description": "Record a training session.",
-        "strict": True,
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "day": {"type": "string", "description": "Date as YYYY-MM-DD."},
-                "activity": {"type": "string", "description": "e.g. run, strength, swim, bike."},
-                "duration_min": {"type": "integer", "description": "Duration in minutes."},
-                "notes": {
-                    "type": ["string", "null"],
-                    "description": "Distance, feeling, exercises... or null.",
-                },
-            },
-            "required": ["day", "activity", "duration_min", "notes"],
-            "additionalProperties": False,
-        },
-    },
-    {
-        "name": "list_workouts",
-        "description": "List training sessions from the last N days.",
-        "strict": True,
-        "input_schema": {
-            "type": "object",
-            "properties": {"days": {"type": "integer", "description": "How many days back."}},
-            "required": ["days"],
-            "additionalProperties": False,
-        },
-    },
 ]
 
 NEEDS_CONFIRMATION = {"delete_task"}
@@ -118,7 +88,7 @@ NOT_LOGGED = set()
 
 
 def functions(data) -> dict:
-    """data: services.data.UserData (tasks and workouts of this person)."""
+    """data: services.data.UserData (what this person can see)."""
     return {
         "add_task": lambda a: data.tasks.add(a["title"], a["due_date"], a["priority"]),
         "list_tasks": lambda a: data.tasks.list(a["include_done"]),
@@ -126,10 +96,6 @@ def functions(data) -> dict:
         "set_task_priority": lambda a: found(
             data.tasks.set_priority(a["task_id"], a["priority"]), a),
         "delete_task": lambda a: found(data.tasks.delete(a["task_id"]), a),
-        "log_workout": lambda a: data.workouts.log(
-            a["day"], a["activity"], a["duration_min"], a["notes"]
-        ),
-        "list_workouts": lambda a: data.workouts.list(a["days"]),
     }
 
 

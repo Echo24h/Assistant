@@ -30,8 +30,8 @@ from urllib.parse import parse_qs, urlsplit
 import anthropic
 
 from ..app import api_error_message, build_agent, open_database
-from ..services.users import User, get_user
-from .api import BadRequest, TasksAPI
+from ..services.users import User
+from .api import SharedDB, TasksAPI
 
 STATIC_DIR = Path(__file__).parent / "static"
 # The only files the server will ever send: URL path -> (file, content type).
@@ -90,6 +90,13 @@ class Session:
 
     # --- called from the web server's threads ---
 
+    def close(self) -> None:
+        """End of this conversation: free the agent's database connection.
+        If a turn is still running, its thread uses the connection: leave it
+        to Python, which closes it when nothing refers to it any more."""
+        if not self.busy:
+            self.agent.close()
+
     def ask(self, text: str) -> dict:
         if self.busy:
             return {"type": "error", "text": "Still working on the previous message."}
@@ -117,10 +124,11 @@ class App:
         self.cfg = cfg
         self.calendar = calendar
         self.gmail = gmail
-        self.conn, self.owner = open_database(cfg)
+        conn, self.owner = open_database(cfg)
+        self.db = SharedDB(conn)  # one connection + one lock for all the web APIs
         self.sessions: dict[str, Session] = {}
-        self.lock = threading.Lock()
-        self.tasks = TasksAPI(self.conn)  # direct features, no model
+        self.lock = threading.Lock()  # protects self.sessions
+        self.tasks = TasksAPI(self.db)  # direct features, no model
 
     def user(self, headers) -> User | None:
         """The allowed user making this request, or None."""
@@ -129,8 +137,7 @@ class App:
             login = self.cfg.web_dev_user  # None unless testing locally
         if login not in self.cfg.web_users:
             return None
-        with self.tasks.lock:  # the shared connection
-            return get_user(self.conn, login)
+        return self.db.user(login)
 
     def session(self, user: User, new: bool = False) -> Session:
         # Google accounts are the owner's: only the owner's agent gets them.
@@ -138,6 +145,8 @@ class App:
         calendar, gmail = (self.calendar, self.gmail) if is_owner else (None, None)
         with self.lock:
             if new or user.login not in self.sessions:
+                if user.login in self.sessions:
+                    self.sessions[user.login].close()
                 self.sessions[user.login] = Session(
                     lambda confirm: build_agent(self.cfg, confirm, user, calendar, gmail))
             return self.sessions[user.login]
@@ -188,7 +197,7 @@ def make_handler(app: App):
             else:  # direct features (web/api.py)
                 try:
                     event = app.tasks.post(user, self.path, data)
-                except BadRequest as e:
+                except ValueError as e:  # BadRequest, or a rule of services/
                     return self.send_json({"error": str(e)}, HTTPStatus.BAD_REQUEST)
                 if event is None:
                     return self.send_json({"error": "not found"}, HTTPStatus.NOT_FOUND)
