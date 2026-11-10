@@ -13,6 +13,7 @@
 <script src="/recipes.js" defer></script>
 <script src="/shopping.js" defer></script>
 <script src="/finances.js" defer></script>
+<script src="/bugs.js" defer></script>
 </head>
 <body>
 <header>
@@ -25,6 +26,8 @@
   </nav>
   <button id="reset" type="button" class="small" title="Nouvelle conversation"
           aria-label="Nouvelle conversation">↺</button>
+  <button id="bug-open" type="button" class="small" title="Signaler un bug"
+          aria-label="Signaler un bug">🐞</button>
 </header>
 
 <!-- Chat with the agent (uses the model, costs tokens) -->
@@ -120,5 +123,22 @@
     <ul id="fin-list" class="list"></ul>
   </div>
 </section>
+
+<!-- Bug report (🐞): stored on our server only -->
+<dialog id="bug-dialog">
+  <form id="bug-form" class="stack">
+    <strong>Signaler un bug</strong>
+    <textarea id="bug-text" rows="5" maxlength="2000" required
+              placeholder="Ce que tu as fait, ce qui s'est passé, ce que tu attendais…"></textarea>
+    <label class="check"><input id="bug-chat" type="checkbox" checked>
+      Joindre les derniers messages du chat</label>
+    <label class="check">📎 Capture d'écran (facultatif)
+      <input id="bug-image" type="file" accept="image/*"></label>
+    <div class="row">
+      <button type="submit">Envoyer</button>
+      <button id="bug-cancel" type="button" class="small">Annuler</button>
+    </div>
+  </form>
+</dialog>
 </body>
 </html>

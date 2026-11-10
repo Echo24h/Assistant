@@ -63,6 +63,15 @@ language. Examples:
 - **Budget**: who owes whom at the top, add an expense, the month's list
   and totals per category.
 
+**Report a bug**: the 🐞 button (any tab) or "signale un bug : …" in the
+chat. The report keeps the tab, the last error, the code version and, if
+the person agrees, the last chat messages and a screenshot (made smaller
+and re-encoded in the browser, which drops the photo's metadata such as
+GPS position; checked as a real JPEG/PNG on the server, never served back
+by the web page). It stays on the server (no
+GitHub issue: that would be a way out to the internet); the owner reads
+it with `python -m assistant bugs` and closes it with `bugs fix ID`.
+
 ## How shared data works
 
 - **Shopping list**: a recipe is scaled to the number of people, and the

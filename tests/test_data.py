@@ -151,3 +151,35 @@ def test_strict_tools_are_the_confirmed_ones():
     assert strict == box.needs_confirmation and len(strict) <= 20
     with pytest.raises(ToolError, match="Missing argument"):  # not strict: checked by us
         box.run("add_task", {"title": "x"})
+
+
+def test_bug_reports():
+    conn, me, her = household()
+    report = user_data(conn, her).bugs.report("The tab is blank", "recipes",
+                                              "x" * 20_000, version="abc123")
+    bugs = user_data(conn, me).bugs
+    [bug] = bugs.list()
+    assert (bug["reported_by"], bug["place"], bug["version"]) == ("Anna", "recipes", "abc123")
+    assert len(bug["details"]) == 8000  # long context is cut, not refused
+    assert bugs.set_status(report["id"], "fixed") and bugs.list() == []
+    assert len(bugs.list("fixed")) == 1
+    with pytest.raises(ValueError):
+        bugs.report("  ", "chat")
+
+    box = ToolBox(user_data(conn, me), confirm=lambda q: False)  # no confirmation needed
+    box.run("report_bug", {"description": "The agent said done but nothing changed"})
+    assert bugs.list()[0]["place"] == "agent"
+
+
+PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 50  # starts like a real PNG
+
+
+def test_bug_screenshot_is_checked():
+    conn, me, _ = household()
+    bugs = user_data(conn, me).bugs
+    report = bugs.report("Look", "chat", image=PNG)
+    assert bugs.image(report["id"]) == PNG and bugs.list()[0]["has_image"] == 1
+    with pytest.raises(ValueError, match="JPEG or PNG"):
+        bugs.report("x", "chat", image=b"<svg onload=alert(1)>")  # an "image" that runs code
+    with pytest.raises(ValueError, match="2 MB"):
+        bugs.report("x", "chat", image=b"\xff\xd8\xff" + b"\x00" * 2_000_000)

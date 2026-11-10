@@ -113,6 +113,7 @@ sudo tailscale serve --bg 8765   # HTTPS, visible only to my own devices
 python -m assistant          # chat in the terminal
 python -m assistant brief    # morning brief: today's events, important email, tasks
 python -m assistant web      # chat page for the phone (see above)
+python -m assistant bugs     # bugs reported with 🐞 or in the chat (bugs fix 3)
 pytest                       # tests use fake clients: no API key, no Google account
 ```
 

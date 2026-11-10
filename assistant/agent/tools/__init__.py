@@ -12,13 +12,14 @@ Safety rules enforced here, in code (not in the prompt):
   tools: at most 20, and a limited total grammar size.) The other tools'
   arguments are checked by our code: a missing one is a ToolError.
 
-Each domain (tasks.py, recipes.py, shopping.py, finances.py, calendar.py, gmail.py) brings its own tools; later,
+Each domain (tasks.py, recipes.py, shopping.py, finances.py, bugs.py, calendar.py, gmail.py) brings its own tools; later,
 the domains given to the ToolBox can depend on who is talking.
 """
 
 import json
 from typing import Callable
 
+from . import bugs as bug_tools
 from . import calendar as calendar_tools
 from . import finances as finance_tools
 from . import gmail as gmail_tools
@@ -49,6 +50,7 @@ class ToolBox:
         self._add(recipe_tools, data)
         self._add(shopping_tools, data)
         self._add(finance_tools, data)
+        self._add(bug_tools, data)
         if calendar is not None:
             self._add(calendar_tools, calendar)
         if gmail is not None:

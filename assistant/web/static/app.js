@@ -1,7 +1,16 @@
 // Shared helpers and tab switching. Loaded before chat.js and tasks.js.
 
+// The last error shown, joined to bug reports (bugs.js).
+let lastError = "";
+
 // Every request is JSON: the server refuses anything else (CSRF protection).
 async function api(method, path, data) {
+  const result = await request(method, path, data);
+  if (result.type === "error") lastError = `${method} ${path}: ${result.text}`;
+  return result;
+}
+
+async function request(method, path, data) {
   const options = { method, headers: { "Content-Type": "application/json" } };
   if (data !== undefined) options.body = JSON.stringify(data);
   let response;

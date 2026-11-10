@@ -32,6 +32,7 @@ import anthropic
 from ..app import api_error_message, build_agent, open_database
 from ..services.users import User
 from .api import SharedDB
+from .bugs_api import BugsAPI
 from .finances_api import FinancesAPI
 from .recipes_api import RecipesAPI
 from .shopping_api import ShoppingAPI
@@ -48,11 +49,14 @@ STATIC = {
     "/recipes.js": ("recipes.js", "text/javascript; charset=utf-8"),
     "/shopping.js": ("shopping.js", "text/javascript; charset=utf-8"),
     "/finances.js": ("finances.js", "text/javascript; charset=utf-8"),
+    "/bugs.js": ("bugs.js", "text/javascript; charset=utf-8"),
 }
 # No inline script or style is allowed: even injected HTML could not run code.
 CSP = ("default-src 'self'; frame-ancestors 'none'; base-uri 'none'; "
        "form-action 'self'; object-src 'none'")
 MAX_BODY = 64_000  # bytes: a chat message or a typed recipe, not a file upload
+# The only exception: a bug report may carry a screenshot (2 MB, in base64).
+MAX_BODY_FOR = {"/api/bugs/report": 3_000_000}
 ANSWER_TIMEOUT = 300  # seconds to answer a confirmation, then it counts as "no"
 TURN_TIMEOUT = 600  # seconds max for one agent turn
 
@@ -137,7 +141,7 @@ class App:
         self.lock = threading.Lock()  # protects self.sessions
         # Direct features, no model: one API per domain (web/*_api.py).
         self.apis = [TasksAPI(self.db), RecipesAPI(self.db), ShoppingAPI(self.db),
-                     FinancesAPI(self.db)]
+                     FinancesAPI(self.db), BugsAPI(self.db)]
 
     def direct(self, method: str, user: User, path: str, payload: dict) -> dict | None:
         """Ask each domain API in turn; None if no API knows this path."""
@@ -234,7 +238,7 @@ def make_handler(app: App):
             if self.headers.get("Content-Type", "").split(";")[0] != "application/json":
                 return None
             length = int(self.headers.get("Content-Length") or 0)
-            if not 0 < length <= MAX_BODY:
+            if not 0 < length <= MAX_BODY_FOR.get(self.path, MAX_BODY):
                 return None
             try:
                 data = json.loads(self.rfile.read(length))

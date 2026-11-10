@@ -2,12 +2,15 @@
 and the web interface for the phone (`python -m assistant web`)."""
 
 import sys
+from pathlib import Path
 
 import anthropic
 
 from .agent import Agent
 from .app import api_error_message, build_agent, connect_google, open_database
 from .config import load_config
+from .services.bugs import image_type
+from .services.household import user_data
 
 
 def confirm_in_terminal(question: str) -> bool:
@@ -30,13 +33,50 @@ def login(cfg) -> None:
         print(f"Google connected. Token saved in {cfg.google_token_path}")
 
 
+def bugs(cfg, args: list[str]) -> None:
+    """bugs: the open ones. bugs closed: the fixed ones. bugs fix 3 / bugs reopen 3."""
+    conn, owner = open_database(cfg)
+    reports = user_data(conn, owner).bugs
+    if len(args) == 2 and args[0] in ("fix", "reopen") and args[1].isdigit():
+        status = "fixed" if args[0] == "fix" else "open"
+        ok = reports.set_status(int(args[1]), status)
+        return print(f"Bug {args[1]}: {status}." if ok else f"No bug {args[1]}.")
+    if args not in ([], ["closed"]):
+        sys.exit("Usage: python -m assistant bugs [closed | fix ID | reopen ID]")
+    shown = reports.list("fixed" if args == ["closed"] else "open")
+    if not shown:
+        return print("No bug. 🎉" if not args else "No fixed bug yet.")
+    for bug in shown:
+        print(f"\n#{bug['id']}  {bug['created_at']}  {bug['reported_by']}  "
+              f"[{bug['place']}]  code {bug['version'] or '?'}")
+        print(f"  {bug['description']}")
+        for line in (bug["details"] or "").splitlines():
+            print(f"    {line}")
+        if bug["has_image"]:
+            print(f"  📎 {save_bug_image(cfg, reports, bug['id'])}")
+
+
+def save_bug_image(cfg, reports, bug_id: int) -> Path:
+    """Write a bug's screenshot next to the data (only you can read it) and
+    return its path, to open it."""
+    image = reports.image(bug_id)
+    folder = cfg.data_dir / "bug_images"
+    folder.mkdir(mode=0o700, exist_ok=True)
+    path = folder / f"bug-{bug_id}.{image_type(image)}"
+    path.write_bytes(image)
+    path.chmod(0o600)
+    return path
+
+
 def main() -> None:
     cfg = load_config()
     args = sys.argv[1:]
     if args == ["login"]:
         return login(cfg)
+    if args[:1] == ["bugs"]:
+        return bugs(cfg, args[1:])
     if args not in ([], ["brief"], ["web"]):
-        sys.exit("Usage: python -m assistant [login | brief | web]")
+        sys.exit("Usage: python -m assistant [login | brief | web | bugs]")
 
     calendar, gmail = connect_google(cfg, interactive=False)
 

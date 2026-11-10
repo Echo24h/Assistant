@@ -6,7 +6,7 @@ fooled by an email); a click in the page is already the user's decision.
 Identity and CSRF checks still apply (web/server.py does them first).
 
 This file: what all the domain APIs share. One file per domain next to it
-(tasks_api.py, recipes_api.py, shopping_api.py, finances_api.py), like services/.
+(tasks_api.py, recipes_api.py, shopping_api.py, finances_api.py, bugs_api.py), like services/.
 Each API has get(user, path, query) and post(user, path, data), which
 return None when the path is not theirs.
 """

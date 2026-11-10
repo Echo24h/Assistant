@@ -210,3 +210,27 @@ def test_finances_tab(server):
     assert post("/api/finances/add", {"amount": 12, "description": "x", "category": "courses",
                                       "split": "equal"})[0] == 400  # typed text expected
     assert post("/api/finances/delete", {"id": page["expenses"][0]["id"]}) == (200, {"ok": True})
+
+
+def test_bug_button(server):
+    body = json.dumps({"description": "Bouton cassé", "place": "tasks",
+                       "details": "Dernière erreur : x"}).encode()
+    status, result = call(server, "/api/bugs/report", body=body, headers=ME)
+    assert status == 200 and result["status"] == "open"
+    assert call(server, "/api/bugs/report", body=b'{"description": ""}', headers=ME)[0] == 400
+
+
+def test_bug_with_screenshot(server):
+    import base64
+    png = b"\x89PNG\r\n\x1a\n" + b"\x00" * 50
+    def report(image):
+        body = json.dumps({"description": "Voir la capture", "place": "chat",
+                           "image": image}).encode()
+        return call(server, "/api/bugs/report", body=body, headers=ME)[0]
+
+    assert report("data:image/png;base64," + base64.b64encode(png).decode()) == 200
+    assert report("data:image/png;base64,!!!not base64") == 400
+    assert report("data:text/html;base64,PGgxPg==") == 400
+    # Big bodies are allowed for this route only: elsewhere, still 64 KB.
+    big = json.dumps({"text": "x" * 100_000}).encode()
+    assert call(server, "/api/ask", body=big, headers=ME)[0] == 400
