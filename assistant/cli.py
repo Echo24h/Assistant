@@ -6,7 +6,9 @@ import anthropic
 
 from .agent import Agent
 from .config import load_config
-from .google_calendar import Calendar, LoginRequired
+from .gmail import Gmail
+from .google_auth import LoginRequired, get_credentials, google_service
+from .google_calendar import Calendar
 from .store import Store
 from .tools import ToolBox
 
@@ -16,22 +18,35 @@ def confirm_in_terminal(question: str) -> bool:
     return answer in {"y", "yes", "o", "oui"}
 
 
-def connect_calendar(cfg, interactive: bool) -> Calendar | None:
+BRIEF_PROMPT = """Morning brief. In a few short lines:
+1. today's calendar events;
+2. unread emails from the last 24 hours that look important or need an \
+answer (ignore newsletters and ads);
+3. to-do tasks due today or overdue.
+Do not change anything."""
+
+
+def connect_google(cfg, interactive: bool):
+    """Return (calendar, gmail), or (None, None) if Google is not set up."""
     if not cfg.google_enabled:
-        print("(Google Calendar off: set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env)")
-        return None
+        print("(Google off: set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env)")
+        return None, None
     try:
-        return Calendar.connect(cfg.google_client_id, cfg.google_client_secret,
-                                cfg.google_token_path, cfg.timezone, interactive)
+        creds = get_credentials(cfg.google_client_id, cfg.google_client_secret,
+                                cfg.google_token_path, interactive)
     except LoginRequired:
-        print("(Google Calendar off: run `python -m assistant login` first)")
-        return None
+        print("(Google off: run `python -m assistant login` first)")
+        return None, None
+    calendar = Calendar(google_service("calendar", "v3", creds), cfg.timezone)
+    gmail = Gmail(google_service("gmail", "v1", creds))
+    return calendar, gmail
 
 
 def login(cfg) -> None:
     """Log in to Google in the browser once; the token is saved for later runs."""
-    if connect_calendar(cfg, interactive=True):
-        print(f"Google Calendar connected. Token saved in {cfg.google_token_path}")
+    calendar, _ = connect_google(cfg, interactive=True)
+    if calendar:
+        print(f"Google connected. Token saved in {cfg.google_token_path}")
 
 
 def main() -> None:
@@ -39,41 +54,51 @@ def main() -> None:
     args = sys.argv[1:]
     if args == ["login"]:
         return login(cfg)
-    if args:
-        sys.exit("Usage: python -m assistant [login]")
+    if args not in ([], ["brief"]):
+        sys.exit("Usage: python -m assistant [login | brief]")
 
     store = Store(cfg.db_path)
-    calendar = connect_calendar(cfg, interactive=False)
+    calendar, gmail = connect_google(cfg, interactive=False)
 
     agent = Agent(
         client=anthropic.Anthropic(),  # reads ANTHROPIC_API_KEY from the environment
-        toolbox=ToolBox(store, confirm=confirm_in_terminal, calendar=calendar),
+        toolbox=ToolBox(store, confirm=confirm_in_terminal, calendar=calendar, gmail=gmail),
         model=cfg.model,
         effort=cfg.effort,
         log_path=cfg.log_path,
     )
-    print(f"assistant ({cfg.model}) — empty line or Ctrl-D to quit")
+    if args == ["brief"]:  # one question, then exit (later: run by cron)
+        ask_and_print(agent, BRIEF_PROMPT)
+    else:
+        chat(agent, cfg.model)
+    print(f"\nTokens used: {agent.input_tokens} in, {agent.output_tokens} out")
 
+
+def chat(agent: Agent, model: str) -> None:
+    print(f"assistant ({model}) — empty line or Ctrl-D to quit")
     while True:
         try:
             text = input("> ").strip()
         except (EOFError, KeyboardInterrupt):
             break
-        if not text:
+        if not text or not ask_and_print(agent, text):
             break
-        try:
-            print(agent.ask(text))
-        except anthropic.AuthenticationError:
-            print("Invalid or missing ANTHROPIC_API_KEY (see .env.example).")
-            break
-        except anthropic.RateLimitError:
-            print("Rate limited, try again in a moment.")
-        except anthropic.APIStatusError as e:
-            print(f"API error {e.status_code}: {e.message}")
-        except anthropic.APIConnectionError:
-            print("Network error: cannot reach the API.")
 
-    print(f"\nTokens used: {agent.input_tokens} in, {agent.output_tokens} out")
+
+def ask_and_print(agent: Agent, text: str) -> bool:
+    """Ask the agent and print the answer. Return False if we should stop."""
+    try:
+        print(agent.ask(text))
+    except anthropic.AuthenticationError:
+        print("Invalid or missing ANTHROPIC_API_KEY (see .env.example).")
+        return False
+    except anthropic.RateLimitError:
+        print("Rate limited, try again in a moment.")
+    except anthropic.APIStatusError as e:
+        print(f"API error {e.status_code}: {e.message}")
+    except anthropic.APIConnectionError:
+        print("Network error: cannot reach the API.")
+    return True
 
 
 if __name__ == "__main__":

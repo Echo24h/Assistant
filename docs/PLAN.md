@@ -35,7 +35,13 @@ Décisions prises le 10.11.2026. Document interne (en français, pour moi).
   communautaires demandent l'accès complet), et le code reste court et
   explicable. Google propose aussi un serveur MCP officiel (Calendar MCP
   API) : option pour plus tard, pour montrer MCP en entretien.
-- Gmail : même approche probable (à décider au moment de l'ajouter).
+- **Gmail : même approche** (API directe, `gmail.readonly`), décidé le
+  10.11.2026. Un seul token Google pour les deux scopes
+  (`assistant/google_auth.py`) ; un token sans le scope Gmail impose un
+  nouveau `login`.
+  - Contenu des mails marqué `untrusted_email`, corps tronqué à 3000
+    caractères, **jamais écrit dans le journal** (`NOT_LOGGED`).
+  - Aucun outil d'envoi, de brouillon, de suppression ni de libellé.
 - **Mes propres outils** pour la todo list et l'entraînement : fonctions
   Python (ou petit serveur MCP), stockage SQLite local.
 

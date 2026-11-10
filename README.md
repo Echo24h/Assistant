@@ -25,7 +25,8 @@ An agent that reads email reads text written by strangers, so it must
 not combine private data, untrusted content and a way to send data out
 (the "lethal trifecta").
 
-- Email access is read-only; the agent can never send email.
+- Email access is read-only (`gmail.readonly`); the agent can never send
+  email. Email content is marked untrusted and never written to the log.
 - Calendar: the agent can read and edit events, but every change needs my
   confirmation, and events never get guests (a guest receives an email,
   which would be a way to send data out).
@@ -61,10 +62,12 @@ All settings and secrets live in `.env` (never committed). Personal data
 
 1. **Claude**: create an API key at console.anthropic.com and set
    `ANTHROPIC_API_KEY`.
-2. **Google Calendar** (optional; without it the calendar tools are off):
-   - in Google Cloud, create a project, enable the Google Calendar API;
+2. **Google Calendar and Gmail** (optional; without them those tools are off):
+   - in Google Cloud, create a project, enable the Google Calendar API
+     and the Gmail API;
    - Google Auth Platform: audience *External*, status *Testing*, add
-     yourself as a test user; data access: only `.../auth/calendar.events`;
+     yourself as a test user; data access: only `.../auth/calendar.events`
+     and `.../auth/gmail.readonly`;
    - create an OAuth client of type *Desktop app* and copy its id and
      secret into `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`;
    - log in once (opens the browser, saves a token):
@@ -77,12 +80,14 @@ All settings and secrets live in `.env` (never committed). Personal data
 
 ```bash
 python -m assistant          # chat in the terminal
+python -m assistant brief    # morning brief: today's events, important email, tasks
 pytest                       # tests use fake clients: no API key, no Google account
 ```
 
 Code map: `assistant/agent.py` (the loop), `assistant/tools.py` (tool
 schemas, allowlist, confirmation gate), `assistant/store.py` (SQLite),
-`assistant/google_calendar.py` (Google Calendar).
+`assistant/google_auth.py` (Google login), `assistant/google_calendar.py`,
+`assistant/gmail.py` (read-only).
 
 A pre-commit hook runs gitleaks with `.gitleaks.toml` to block committed
 secrets (Anthropic keys, Google client secrets):
@@ -96,6 +101,6 @@ printf '#!/bin/sh\nexec gitleaks protect --staged --redact -c .gitleaks.toml\n' 
 
 - [x] Agent loop, to-do and training tools (local)
 - [x] Google Calendar: read, and edit with confirmation
-- [ ] Gmail read-only, morning brief
+- [x] Gmail read-only (content never logged), morning brief
 - [ ] Evaluation on synthetic emails
 - [ ] Email drafts with confirmation
