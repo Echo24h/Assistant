@@ -1,0 +1,11 @@
+# gitleaks configuration: default rules plus the secrets this project uses.
+# Loaded automatically by gitleaks when run from the repository root.
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "anthropic-api-key"
+description = "Anthropic API key"
+regex = '''sk-ant-[a-z0-9]+-[A-Za-z0-9_\-]{20,}'''
+keywords = ["sk-ant-"]
