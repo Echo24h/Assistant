@@ -18,8 +18,8 @@ from .tools import ToolBox, ToolError
 MAX_STEPS = 10  # safety net: never loop forever on tool calls
 
 SYSTEM_PROMPT = """You are a personal assistant. You manage the household's \
-to-do list, the user's training log and (when connected) their Google \
-Calendar and Gmail (read-only) with the tools provided.
+to-do list and (when connected) the user's Google Calendar and Gmail \
+(read-only) with the tools provided.
 
 - Be brief.
 - Calendar or to-do list? Something that HAPPENS at a moment (meeting, \

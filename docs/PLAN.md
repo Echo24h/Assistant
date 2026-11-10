@@ -171,6 +171,8 @@ Règle : **ne jamais donner le troisième** à l'agent qui lit mes mails.
 
 ### Base de données du foyer (décidé le 10.11.2026)
 
+Entraînement : **abandonné** (migration 003 supprime la table).
+
 Choix : **SQL écrit à la main** (pas d'ORM : chaque ligne s'explique),
 **commun par défaut**, finances **50/50 + qui doit combien**, recettes
 **saisies, proposées par le modèle ou importées par URL**.
@@ -182,7 +184,7 @@ Choix : **SQL écrit à la main** (pas d'ORM : chaque ligne s'explique),
 - `PRAGMA foreign_keys = ON` (désactivé par défaut dans SQLite), mode WAL
   (le web et l'agent lisent pendant qu'un autre écrit).
 - **Un module par domaine** dans `services/` : `users.py`, `tasks.py`,
-  `workouts.py`, puis `recipes.py`, `shopping.py`, `finances.py`.
+  puis `recipes.py`, `shopping.py`, `finances.py`.
   Chaque classe reçoit la connexion **et l'utilisateur** : toutes ses
   requêtes filtrent ce que cette personne a le droit de voir.
 - **Utilisateurs** : table `users` synchronisée depuis
@@ -198,7 +200,6 @@ Schéma visé :
 ```
 users(id, login UNIQUE, name)
 tasks(id, title, due_date, priority, done, owner_id → users NULL=commun, created_by)
-workouts(id, user_id → users, day, activity, duration_min, notes)      -- toujours perso
 recipes(id, title, servings, instructions, source_url, created_by, created_at)
 recipe_ingredients(id, recipe_id → recipes CASCADE, position, name, quantity, unit)
 shopping_items(id, name, quantity, unit, checked, recipe_id → recipes SET NULL, added_by)

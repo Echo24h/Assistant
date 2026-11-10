@@ -1,8 +1,7 @@
-"""Database layer: migrations, users, tasks shared or private, workouts."""
+"""Database layer: migrations, users, tasks shared or private."""
 
 import json
 import sqlite3
-from datetime import date
 
 import pytest
 
@@ -61,15 +60,6 @@ def test_shared_tasks_and_private_tasks():
     assert mine.get(shared["id"])["done"] == 1
 
 
-def test_workouts_are_personal():
-    conn, me, her = household()
-    user_data(conn, me).workouts.log("2026-11-01", "run", 40, "8 km")
-    user_data(conn, me).workouts.log("2026-11-09", "strength", 30, None)
-    recent = user_data(conn, me).workouts.list(7, today=date(2026, 11, 10))
-    assert [w["activity"] for w in recent] == ["strength"]
-    assert user_data(conn, her).workouts.list(30, today=date(2026, 11, 10)) == []
-
-
 def test_rules_apply_to_the_agent_too(data):
     box = ToolBox(data, confirm=lambda q: True)
     with pytest.raises(ToolError):
@@ -111,7 +101,8 @@ def test_migrations_are_numbered_without_gaps():
 
 
 def test_database_from_before_migrations_keeps_its_data(tmp_path):
-    """The real database of version 0: tasks with priority, workouts, no users."""
+    """The real database of version 0: tasks with priority, workouts, no users.
+    Tasks are kept; the workouts table is dropped by 003."""
     db = tmp_path / "old.db"
     old = sqlite3.connect(db)
     old.executescript("""
@@ -130,7 +121,8 @@ def test_database_from_before_migrations_keeps_its_data(tmp_path):
     data = user_data(conn, owner)
     task = data.tasks.list(False)[0]
     assert (task["title"], task["priority"], task["private"]) == ("Old task", "high", 0)
-    assert data.workouts.list(7, today=date(2026, 11, 10))[0]["activity"] == "run"
+    tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master")}
+    assert "workouts" not in tables
     assert conn.execute("PRAGMA user_version").fetchone()[0] == len(migrations())
 
     connect(db)  # opening again changes nothing

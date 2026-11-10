@@ -1,7 +1,7 @@
 # assistant
 
 A personal AI agent that helps me manage my calendar, email, to-do list
-and training, written from scratch in Python on top of the Claude API.
+written from scratch in Python on top of the Claude API.
 
 Work in progress. The goal is a small, readable agent loop with tool use,
 strict safety rules for untrusted content (email), and a measurable
@@ -12,7 +12,7 @@ evaluation.
 - **Agent loop**: the model receives a goal, calls tools, reads the
   results and continues until the task is done. Written by hand, no agent
   framework, to keep every step visible.
-- **Tools**: to-do list and training log (local SQLite); Google Calendar
+- **Tools**: to-do list (local SQLite); Google Calendar
   through Google's API client, with the narrow `calendar.events` scope
   (repeating events, birthdays); Gmail read-only.
 - **Model routing on a small budget**: the small model (Haiku) by default,
@@ -115,7 +115,7 @@ Code map, in three layers:
 assistant/
   services/   the core: data and Google access, no AI, no web
               db.py + migrations/ (SQLite, numbered SQL files), users.py,
-              one module per domain (tasks.py, workouts.py), data.py (what
+              one module per domain (tasks.py), data.py (what
               one person can see), google_auth.py, google_calendar.py, gmail.py
   agent/      the AI: loop.py (the hand-written agent loop) and tools/
               (one module per domain; tools/__init__.py = allowlist + confirmation)
@@ -133,7 +133,7 @@ printf '#!/bin/sh\nexec gitleaks protect --staged --redact -c .gitleaks.toml\n' 
 
 ## Status
 
-- [x] Agent loop, to-do and training tools (local)
+- [x] Agent loop, to-do tools (local)
 - [x] Google Calendar: read, and edit with confirmation
 - [x] Gmail read-only (content never logged), morning brief
 - [x] Phone access: private web page through Tailscale
