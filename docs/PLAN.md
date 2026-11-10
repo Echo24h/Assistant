@@ -155,11 +155,14 @@ Règle : **ne jamais donner le troisième** à l'agent qui lit mes mails.
 - Les réponses sont insérées comme texte (`textContent`), jamais en HTML :
   un mail piégé ne peut pas injecter de code dans la page.
 
-### Plus tard : ma copine
-- Partage de la seule machine de l'assistant (*node sharing*) ou
-  invitation dans le tailnet. **À vérifier** : Tailscale ne transmet
-  peut-être pas l'identité pour une machine partagée ; sinon l'inviter
-  comme utilisateur du tailnet.
+### Ma copine (étape 4, fait)
+- **Partage de la seule machine** de l'assistant (*machine sharing*) :
+  elle garde son compte Tailscale et ne voit que cette machine.
+  **Vérifié** dans la doc de `tailscale serve` : les en-têtes d'identité
+  sont remplis pour « external users who have accepted a share of your
+  device » (pas pour les machines *tagged*, ni pour Funnel).
+- Tâches **communes par défaut**, 🔒 perso au choix (onglet ou chat, ex.
+  une surprise pour l'autre).
 - **Outils autorisés selon la personne, imposés dans le code** : tâches
   communes, finances du couple pour nous deux ; mon Gmail, mon agenda et
   mes tâches perso pour moi seul.
@@ -228,7 +231,7 @@ expense_shares(expense_id → expenses CASCADE, user_id → users, amount_cents)
    un module par domaine ; comportement inchangé.
 2. Recettes et liste de courses (outils + onglets) : **fait**.
 3. Finances (outils + onglet, solde) : **fait**.
-4. Accès de ma copine (Tailscale, outils selon la personne, tâche perso).
+4. Accès de ma copine (Tailscale, outils selon la personne, tâche perso) : **fait**.
 
 ### Migration vers un serveur
 - Code par `git clone`, `.env` par `scp`, données par `rsync`

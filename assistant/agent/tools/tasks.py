@@ -29,15 +29,19 @@ DEFINITIONS = [
                     "description": "Due date as YYYY-MM-DD, or null if none.",
                 },
                 "priority": PRIORITY,
+                "private": {"type": "boolean",
+                            "description": "false = shared with the household (default). "
+                                           "true = only the user sees it: personal, or a "
+                                           "surprise for another member."},
             },
-            "required": ["title", "due_date", "priority"],
+            "required": ["title", "due_date", "priority", "private"],
             "additionalProperties": False,
         },
     },
     {
         "name": "list_tasks",
         "description": "List tasks, most important first, then by due date. "
-                       "Returns id, title, due_date, priority, done.",
+                       "Returns id, title, due_date, priority, done, private.",
         "strict": True,
         "input_schema": {
             "type": "object",
@@ -90,7 +94,8 @@ NOT_LOGGED = set()
 def functions(data) -> dict:
     """data: services.household.UserData (what this person can see)."""
     return {
-        "add_task": lambda a: data.tasks.add(a["title"], a["due_date"], a["priority"]),
+        "add_task": lambda a: data.tasks.add(a["title"], a["due_date"], a["priority"],
+                                             a["private"]),
         "list_tasks": lambda a: data.tasks.list(a["include_done"]),
         "complete_task": lambda a: found(data.tasks.set_done(a["task_id"], True), a),
         "set_task_priority": lambda a: found(

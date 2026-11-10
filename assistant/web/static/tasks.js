@@ -8,6 +8,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const due = document.getElementById("task-due");
   const showDone = document.getElementById("task-show-done");
   const priority = document.getElementById("task-priority");
+  const privateBox = document.getElementById("task-private");
+  const privateLabel = document.getElementById("task-private-label");
+  let shared = false; // more than one person: tasks can be shared or private
 
   // A tap on the badge moves to the next priority: normal -> high -> low -> normal.
   const LABELS = { high: "Haute", normal: "Normale", low: "Basse" };
@@ -45,6 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       item.append(box, el("span", "title", task.title), prio);
+      if (shared) item.append(privacy(task));
       if (task.due_date) {
         const late = !task.done && task.due_date < today;
         item.append(el("span", late ? "due late" : "due", formatDue(task.due_date)));
@@ -69,6 +73,8 @@ document.addEventListener("DOMContentLoaded", () => {
       list.append(el("li", "", result.text));
       return;
     }
+    shared = result.household > 1;
+    privateLabel.hidden = !shared;
     render(result.tasks);
   }
 
@@ -78,13 +84,26 @@ document.addEventListener("DOMContentLoaded", () => {
       title: title.value.trim(),
       due_date: due.value || null,
       priority: priority.value,
+      private: privateBox.checked,
     });
     if (result.type === "error") return alert(result.text);
     title.value = "";
     due.value = "";
     priority.value = "normal";
+    privateBox.checked = false;
     load();
   });
+
+  // 👥 shared with the household, 🔒 only me. A tap switches.
+  function privacy(task) {
+    const button = el("button", "privacy", task.private ? "🔒" : "👥");
+    button.setAttribute("aria-label", task.private ? "Perso (rendre commune)" : "Commune (rendre perso)");
+    button.addEventListener("click", async () => {
+      await api("POST", "/api/tasks/private", { id: task.id, private: !task.private });
+      load();
+    });
+    return button;
+  }
 
   showDone.addEventListener("change", load);
   onShow.tasks = load; // reload each time the tab is opened (the agent may have changed tasks)

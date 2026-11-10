@@ -66,6 +66,11 @@ class Tasks:
         check_priority(priority)
         return self._update("priority = :value", task_id, priority)
 
+    def set_private(self, task_id: int, private: bool) -> bool:
+        """Private: only I see it from now on. Shared: back to the household.
+        A private task of someone else is not visible, so it cannot be changed."""
+        return self._update("owner_id = :value", task_id, self.me if private else None)
+
     def delete(self, task_id: int) -> bool:
         with self.conn:
             cur = self.conn.execute(f"DELETE FROM tasks WHERE id = :id AND {VISIBLE}",

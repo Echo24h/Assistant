@@ -150,5 +150,6 @@ printf '#!/bin/sh\nexec gitleaks protect --staged --redact -c .gitleaks.toml\n' 
 - [x] Household database (migrations, users, shared or private tasks)
 - [x] Recipes and shared shopping list (scaled, added up), import by link
 - [x] Shared expenses: money in cents, equal shares, who owes whom
+- [x] A second person (Tailscale machine sharing), private tasks, Google for the owner only
 - [ ] Evaluation on synthetic emails
 - [ ] Email drafts with confirmation

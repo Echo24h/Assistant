@@ -107,6 +107,9 @@ nav button[aria-selected="true"] { background: var(--bg); color: var(--text); }
 }
 .list .prio.high { border-color: var(--no); color: var(--no); font-weight: 600; }
 .list .prio.low { opacity: .6; }
+.list .privacy { border: 0; background: transparent; padding: 0 2px; font-size: 16px; }
+.check { display: flex; align-items: center; gap: 6px; color: var(--muted); white-space: nowrap; }
+.check[hidden] { display: none; }
 
 /* Recipes */
 .card {

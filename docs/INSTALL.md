@@ -9,6 +9,7 @@ are simply off; without Tailscale, use the terminal.
 3. [Google Calendar and Gmail](#3-google-calendar-and-gmail-optional)
 4. [First run](#4-first-run)
 5. [Phone access with Tailscale](#5-phone-access-with-tailscale-optional)
+   - [Add a person to the household](#add-a-person-to-the-household)
 6. [Keep it running (server)](#6-keep-it-running-on-a-server)
 7. [Update](#7-update)
 8. [Move to another machine](#8-move-to-another-machine)
@@ -149,6 +150,31 @@ Check that only the tailnet sees it: `tailscale serve status` must say
 
 For a local test without Tailscale, set `ASSISTANT_WEB_DEV_USER` to an
 allowed login and open http://127.0.0.1:8765. Never set it on a server.
+
+### Add a person to the household
+
+The other person keeps **their own** Tailscale account and sees **only**
+this machine (Tailscale *machine sharing*), not your other devices.
+Tailscale still tells the app who they are (`Tailscale-User-Login`).
+
+1. They install Tailscale on their phone and create an account.
+2. In the [admin console](https://login.tailscale.com/admin/machines),
+   on the assistant's machine: *⋯* → *Share…* → send them the link.
+   They accept it in their Tailscale app.
+3. Add their login to `.env` (the first person stays the owner):
+
+   ```
+   ASSISTANT_WEB_USERS=you@gmail.com=You,them@gmail.com=Them
+   ```
+
+   Their exact login: in the admin console, *Users* (shared users are
+   listed with the machine), or in their Tailscale app.
+4. Restart the web interface. They open the same `https://...ts.net/`
+   address and add it to their home screen.
+
+What they get: their own chat; the household's to-do list (minus your
+private tasks, 🔒), recipes, shopping list and budget. Not your calendar
+or your email: the Google tools are given to the owner only, in code.
 
 ## 6. Keep it running on a server
 

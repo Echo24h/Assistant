@@ -63,11 +63,11 @@ def test_shared_tasks_and_private_tasks():
 def test_rules_apply_to_the_agent_too(data):
     box = ToolBox(data, confirm=lambda q: True)
     with pytest.raises(ToolError):
-        box.run("add_task", {"title": "x", "due_date": "next week", "priority": "normal"})
+        box.run("add_task", {"title": "x", "due_date": "next week", "priority": "normal", "private": False})
     with pytest.raises(ToolError, match="title"):
-        box.run("add_task", {"title": "  ", "due_date": None, "priority": "normal"})
+        box.run("add_task", {"title": "  ", "due_date": None, "priority": "normal", "private": False})
     with pytest.raises(ToolError, match="title"):
-        box.run("add_task", {"title": "x" * 201, "due_date": None, "priority": "normal"})
+        box.run("add_task", {"title": "x" * 201, "due_date": None, "priority": "normal", "private": False})
 
 
 def test_unknown_tool_is_refused(data):
@@ -126,3 +126,13 @@ def test_database_from_before_migrations_keeps_its_data(tmp_path):
     assert conn.execute("PRAGMA user_version").fetchone()[0] == len(migrations())
 
     connect(db)  # opening again changes nothing
+
+
+def test_make_a_task_private_or_shared():
+    conn, me, her = household()
+    mine, hers = user_data(conn, me).tasks, user_data(conn, her).tasks
+    task = mine.add("Gift for Anna", None)
+    assert hers.get(task["id"])  # shared at first
+    assert mine.set_private(task["id"], True)
+    assert hers.get(task["id"]) is None and not hers.set_private(task["id"], False)
+    assert mine.set_private(task["id"], False) and hers.get(task["id"])

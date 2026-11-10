@@ -1,5 +1,6 @@
 """Tasks tab: the to-do list, read and changed directly (services/tasks.py)."""
 
+from ..services.users import list_users
 from .api import SharedDB, field, id_of
 
 
@@ -11,7 +12,9 @@ class TasksAPI:
         """GET routes for this user. Returns None if the path is not ours."""
         if path == "/api/tasks":
             with self.db.data_for(user) as data:
-                return {"tasks": data.tasks.list(include_done=query.get("all") == "1")}
+                return {"tasks": data.tasks.list(include_done=query.get("all") == "1"),
+                        # "shared / private" only matters with more than one person.
+                        "household": len(list_users(data.conn))}
         return None
 
     def post(self, user, path: str, data: dict) -> dict | None:
@@ -26,10 +29,14 @@ class TasksAPI:
             if path == "/api/tasks/add":
                 return tasks.add(field(data, "title", str),
                                  field(data, "due_date", str, optional=True) or None,
-                                 field(data, "priority", str, optional=True) or "normal")
+                                 field(data, "priority", str, optional=True) or "normal",
+                                 field(data, "private", bool, optional=True) or False)
 
             if path == "/api/tasks/priority":
                 return {"ok": tasks.set_priority(id_of(data), field(data, "priority", str))}
+
+            if path == "/api/tasks/private":
+                return {"ok": tasks.set_private(id_of(data), field(data, "private", bool))}
 
             if path == "/api/tasks/done":
                 return {"ok": tasks.set_done(id_of(data), field(data, "done", bool))}

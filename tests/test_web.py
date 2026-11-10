@@ -119,7 +119,9 @@ def test_tasks_tab_without_model(server):
     assert post("/api/tasks/done", {"id": task["id"], "done": True}) == (200, {"ok": True})
     assert tasks() == [] and len(tasks("?all=1")) == 1
     assert post("/api/tasks/done", {"id": task["id"], "done": False}) == (200, {"ok": True})
-    assert task["priority"] == "normal"  # default from the page
+    assert task["priority"] == "normal" and task["private"] == 0  # defaults from the page
+    assert post("/api/tasks/private", {"id": task["id"], "private": True}) == (200, {"ok": True})
+    assert tasks()[0]["private"] == 1
     assert post("/api/tasks/priority", {"id": task["id"], "priority": "high"}) == (200, {"ok": True})
     assert tasks()[0]["priority"] == "high"
     assert post("/api/tasks/delete", {"id": task["id"]}) == (200, {"ok": True})
