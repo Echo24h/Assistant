@@ -22,7 +22,6 @@ DEFINITIONS = [
         "name": "save_recipe",
         "description": "Save a recipe (dictated by the user, or one you suggested and "
                        "the user wants to keep). The user is asked to confirm.",
-        "strict": True,
         "input_schema": {
             "type": "object",
             "properties": {
@@ -38,7 +37,6 @@ DEFINITIONS = [
     {
         "name": "list_recipes",
         "description": "List saved recipes (id, title, servings).",
-        "strict": True,
         "input_schema": {
             "type": "object",
             "properties": {"search": {"type": ["string", "null"],
@@ -50,13 +48,11 @@ DEFINITIONS = [
     {
         "name": "get_recipe",
         "description": "A saved recipe with its ingredients and instructions.",
-        "strict": True,
         "input_schema": RECIPE_ID,
     },
     {
         "name": "delete_recipe",
         "description": "Delete a saved recipe. The user is asked to confirm.",
-        "strict": True,
         "input_schema": RECIPE_ID,
     },
 ]
@@ -70,7 +66,7 @@ def functions(data) -> dict:
     return {
         "save_recipe": lambda a: data.recipes.add(
             a["title"], a["servings"], a["ingredients"], a["instructions"]),
-        "list_recipes": lambda a: data.recipes.list(a["search"]),
+        "list_recipes": lambda a: data.recipes.list(a.get("search")),
         "get_recipe": lambda a: get_recipe(data, a["recipe_id"]),
         "delete_recipe": lambda a: delete_recipe(data, a["recipe_id"]),
     }

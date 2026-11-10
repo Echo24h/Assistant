@@ -6,6 +6,12 @@ Safety rules enforced here, in code (not in the prompt):
 - CONFIRMATION: tools listed in a domain's NEEDS_CONFIRMATION only run if
   the user says yes. Obvious mistakes are caught before asking (check).
 
+- STRICT: the API guarantees that the arguments match the schema. Set
+  here, for the tools that need confirmation only: the question shown to
+  the user must describe exactly what will run. (The API limits strict
+  tools: at most 20, and a limited total grammar size.) The other tools'
+  arguments are checked by our code: a missing one is a ToolError.
+
 Each domain (tasks.py, recipes.py, shopping.py, finances.py, calendar.py, gmail.py) brings its own tools; later,
 the domains given to the ToolBox can depend on who is talking.
 """
@@ -56,7 +62,8 @@ class ToolBox:
     def _add(self, domain, service) -> None:
         functions = domain.functions(service)
         self.functions |= functions
-        self.definitions += domain.DEFINITIONS
+        self.definitions += [{**tool, "strict": tool["name"] in domain.NEEDS_CONFIRMATION}
+                             for tool in domain.DEFINITIONS]
         self.needs_confirmation |= domain.NEEDS_CONFIRMATION
         self.not_logged |= domain.NOT_LOGGED
         for name in functions:
@@ -77,6 +84,8 @@ class ToolBox:
                     domain.describe(service, name, args)):
                 raise ToolError("The user declined this action. Do not retry it.")
             result = self.functions[name](args)
-        except (ValueError, KeyError) as e:  # bad date, unknown id, Google error...
+        except KeyError as e:  # a non-strict tool called without an argument
+            raise ToolError(f"Missing argument: {e}") from e
+        except ValueError as e:  # bad date, unknown id, Google error...
             raise ToolError(str(e)) from e
         return json.dumps(result, ensure_ascii=False)

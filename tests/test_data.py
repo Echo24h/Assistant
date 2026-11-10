@@ -136,3 +136,18 @@ def test_make_a_task_private_or_shared():
     assert mine.set_private(task["id"], True)
     assert hers.get(task["id"]) is None and not hers.set_private(task["id"], False)
     assert mine.set_private(task["id"], False) and hers.get(task["id"])
+
+
+def test_strict_tools_are_the_confirmed_ones():
+    """API limits (20 strict tools, grammar size), hit once in real use:
+    strict = needs confirmation, and the owner's agent has every tool."""
+    from unittest.mock import MagicMock
+    from assistant.services.google.calendar import Calendar
+    from assistant.services.google.gmail import Gmail
+    conn, me, _ = household()
+    box = ToolBox(user_data(conn, me), confirm=lambda q: True,
+                  calendar=Calendar(MagicMock(), "Europe/Zurich"), gmail=Gmail(MagicMock()))
+    strict = {t["name"] for t in box.definitions if t["strict"]}
+    assert strict == box.needs_confirmation and len(strict) <= 20
+    with pytest.raises(ToolError, match="Missing argument"):  # not strict: checked by us
+        box.run("add_task", {"title": "x"})

@@ -12,14 +12,13 @@ PRIORITY = {
                    "or can wait (low).",
 }
 
-# Tool definitions sent to the model. `strict: True` makes the API guarantee
-# that the arguments match the schema (hence additionalProperties: false and
-# every property listed in `required`; optional values are nullable).
+# Tool definitions sent to the model. Written so that they can be strict
+# (additionalProperties: false, every property in `required`, optional values
+# nullable); tools/__init__.py decides which ones are (see STRICT there).
 DEFINITIONS = [
     {
         "name": "add_task",
         "description": "Add a task to the to-do list.",
-        "strict": True,
         "input_schema": {
             "type": "object",
             "properties": {
@@ -42,7 +41,6 @@ DEFINITIONS = [
         "name": "list_tasks",
         "description": "List tasks, most important first, then by due date. "
                        "Returns id, title, due_date, priority, done, private.",
-        "strict": True,
         "input_schema": {
             "type": "object",
             "properties": {
@@ -55,7 +53,6 @@ DEFINITIONS = [
     {
         "name": "complete_task",
         "description": "Mark a task as done. Use list_tasks first to find its id.",
-        "strict": True,
         "input_schema": {
             "type": "object",
             "properties": {"task_id": {"type": "integer"}},
@@ -66,7 +63,6 @@ DEFINITIONS = [
     {
         "name": "set_task_priority",
         "description": "Change the priority of a task. Use list_tasks first to find its id.",
-        "strict": True,
         "input_schema": {
             "type": "object",
             "properties": {"task_id": {"type": "integer"}, "priority": PRIORITY},
@@ -77,7 +73,6 @@ DEFINITIONS = [
     {
         "name": "delete_task",
         "description": "Delete a task permanently. The user is asked to confirm.",
-        "strict": True,
         "input_schema": {
             "type": "object",
             "properties": {"task_id": {"type": "integer"}},
@@ -96,7 +91,7 @@ def functions(data) -> dict:
     return {
         "add_task": lambda a: data.tasks.add(a["title"], a["due_date"], a["priority"],
                                              a["private"]),
-        "list_tasks": lambda a: data.tasks.list(a["include_done"]),
+        "list_tasks": lambda a: data.tasks.list(a.get("include_done", False)),
         "complete_task": lambda a: found(data.tasks.set_done(a["task_id"], True), a),
         "set_task_priority": lambda a: found(
             data.tasks.set_priority(a["task_id"], a["priority"]), a),

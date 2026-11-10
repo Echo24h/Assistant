@@ -10,7 +10,6 @@ DEFINITIONS = [
     {
         "name": "add_to_shopping_list",
         "description": "Add items to the shopping list (same items are added up).",
-        "strict": True,
         "input_schema": {
             "type": "object",
             "properties": {"items": INGREDIENTS},
@@ -22,7 +21,6 @@ DEFINITIONS = [
         "name": "add_recipe_to_shopping_list",
         "description": "Add a saved recipe's ingredients to the shopping list, scaled "
                        "to a number of people.",
-        "strict": True,
         "input_schema": {
             "type": "object",
             "properties": {
@@ -37,14 +35,12 @@ DEFINITIONS = [
     {
         "name": "list_shopping_list",
         "description": "The shopping list: items still to buy (id, name, quantity, unit).",
-        "strict": True,
         "input_schema": {"type": "object", "properties": {}, "additionalProperties": False},
     },
     {
         "name": "remove_from_shopping_list",
         "description": "Remove items from the shopping list. Use list_shopping_list "
                        "first to find their ids.",
-        "strict": True,
         "input_schema": {
             "type": "object",
             "properties": {"item_ids": {"type": "array", "items": {"type": "integer"}}},

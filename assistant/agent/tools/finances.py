@@ -9,7 +9,6 @@ DEFINITIONS = [
     {
         "name": "add_expense",
         "description": "Record a household expense. The user is asked to confirm.",
-        "strict": True,
         "input_schema": {
             "type": "object",
             "properties": {
@@ -31,7 +30,6 @@ DEFINITIONS = [
     {
         "name": "list_expenses",
         "description": "Expenses of a month, with totals per category.",
-        "strict": True,
         "input_schema": {
             "type": "object",
             "properties": {"month": {"type": ["string", "null"],
@@ -43,14 +41,12 @@ DEFINITIONS = [
     {
         "name": "get_balance",
         "description": "Who owes whom in the household, and how much.",
-        "strict": True,
         "input_schema": {"type": "object", "properties": {}, "additionalProperties": False},
     },
     {
         "name": "delete_expense",
         "description": "Delete an expense. Use list_expenses first to find its id. "
                        "The user is asked to confirm.",
-        "strict": True,
         "input_schema": {
             "type": "object",
             "properties": {"expense_id": {"type": "integer"}},
@@ -72,9 +68,9 @@ def functions(data) -> dict:
             a["amount"], a["description"], a["category"], a["day"],
             payer_id(finances, a["paid_by"]), a["split"])),
         "list_expenses": lambda a: {
-            "expenses": [readable(finances, e) for e in finances.list(a["month"])],
+            "expenses": [readable(finances, e) for e in finances.list(a.get("month"))],
             "by_category": {c: money(cents, finances.currency)
-                            for c, cents in finances.by_category(a["month"]).items()},
+                            for c, cents in finances.by_category(a.get("month")).items()},
         },
         "get_balance": lambda a: balance(finances),
         "delete_expense": lambda a: delete_expense(finances, a["expense_id"]),
