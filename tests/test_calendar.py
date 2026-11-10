@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from assistant.services.google_calendar import Calendar, event_body, short_event
-from assistant.services.store import Store
+from helpers import memory_data
 from assistant.agent.tools import ToolBox, ToolError
 
 GOOGLE_EVENT = {
@@ -29,7 +29,7 @@ def service():
 
 def make_box(service, answer: bool):
     calendar = Calendar(service, "Europe/Zurich")
-    return ToolBox(Store(":memory:"), confirm=lambda q: answer, calendar=calendar)
+    return ToolBox(memory_data(), confirm=lambda q: answer, calendar=calendar)
 
 
 def test_event_body_times_and_no_guests():
@@ -59,7 +59,7 @@ def test_create_needs_confirmation_and_sends_no_email(service):
 def test_birthday_repeats_every_year(service):
     asked = []
     calendar = Calendar(service, "Europe/Zurich")
-    box = ToolBox(Store(":memory:"), confirm=lambda q: asked.append(q) or True,
+    box = ToolBox(memory_data(), confirm=lambda q: asked.append(q) or True,
                   calendar=calendar)
     box.run("create_event", {"summary": "Anniversaire Anna", "start": "2026-12-03",
                              "end": "2026-12-04", "description": None, "location": None,
@@ -73,7 +73,7 @@ def test_birthday_repeats_every_year(service):
 def test_add_birthday_uses_google_birthday_type(service):
     asked = []
     calendar = Calendar(service, "Europe/Zurich")
-    box = ToolBox(Store(":memory:"), confirm=lambda q: asked.append(q) or True,
+    box = ToolBox(memory_data(), confirm=lambda q: asked.append(q) or True,
                   calendar=calendar)
     box.run("add_birthday", {"person": "Anna", "date": "2027-11-03"})
     kwargs = service.events.return_value.insert.call_args.kwargs
@@ -92,7 +92,7 @@ def test_result_says_when_event_repeats():
 
 def test_holidays_follow_the_weekday_not_the_date(service):
     asked = []
-    box = ToolBox(Store(":memory:"), confirm=lambda q: asked.append(q) or True,
+    box = ToolBox(memory_data(), confirm=lambda q: asked.append(q) or True,
                   calendar=Calendar(service, "Europe/Zurich"))
     args = {"summary": "Fête des pères", "start": "2027-06-20", "end": "2027-06-21",
             "description": None, "location": None, "repeat": "yearly_nth_weekday"}
@@ -130,7 +130,7 @@ def test_delete_sends_no_email(service):
 
 
 def test_calendar_tools_only_when_connected():
-    box = ToolBox(Store(":memory:"), confirm=lambda q: True)
+    box = ToolBox(memory_data(), confirm=lambda q: True)
     names = {t["name"] for t in box.definitions}
     assert "list_events" not in names
     with pytest.raises(ToolError, match="Unknown tool"):
@@ -141,7 +141,7 @@ def test_end_before_start_is_refused_before_asking(service):
     """The pizza bug: 'until midnight' sent as 00:00 of the SAME day."""
     asked = []
     calendar = Calendar(service, "Europe/Zurich")
-    box = ToolBox(Store(":memory:"), confirm=lambda q: asked.append(q) or True,
+    box = ToolBox(memory_data(), confirm=lambda q: asked.append(q) or True,
                   calendar=calendar)
     args = {"event_id": "abc", "summary": None, "start": None,
             "end": "2026-11-12T00:00", "description": None, "location": None}

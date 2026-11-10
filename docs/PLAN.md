@@ -169,6 +169,66 @@ Règle : **ne jamais donner le troisième** à l'agent qui lit mes mails.
   combien). Connexion bancaire : non pour l'instant (gros accès en plus,
   et l'agent lit des mails écrits par des inconnus).
 
+### Base de données du foyer (décidé le 10.11.2026)
+
+Choix : **SQL écrit à la main** (pas d'ORM : chaque ligne s'explique),
+**commun par défaut**, finances **50/50 + qui doit combien**, recettes
+**saisies, proposées par le modèle ou importées par URL**.
+
+- **Migrations numérotées** : `services/migrations/001_*.sql`, `002_*.sql`…
+  SQLite garde le numéro appliqué (`PRAGMA user_version`) ; au démarrage,
+  les fichiers plus récents sont appliqués dans l'ordre, chacun dans une
+  transaction (tout ou rien). Plus de `ALTER TABLE` bricolé dans le code.
+- `PRAGMA foreign_keys = ON` (désactivé par défaut dans SQLite), mode WAL
+  (le web et l'agent lisent pendant qu'un autre écrit).
+- **Un module par domaine** dans `services/` : `users.py`, `tasks.py`,
+  `workouts.py`, puis `recipes.py`, `shopping.py`, `finances.py`.
+  Chaque classe reçoit la connexion **et l'utilisateur** : toutes ses
+  requêtes filtrent ce que cette personne a le droit de voir.
+- **Utilisateurs** : table `users` synchronisée depuis
+  `ASSISTANT_WEB_USERS`. Le premier de la liste est le **propriétaire**
+  (ses comptes Google ; le terminal agit en son nom).
+- **Partage** : `owner_id NULL` = commun au foyer ; `owner_id = moi` =
+  perso. Une tâche perso est invisible **et intouchable** pour l'autre
+  (même en connaissant son id : le filtre est dans chaque `WHERE`).
+- **Agenda et Gmail** : outils donnés au propriétaire seulement.
+
+Schéma visé :
+
+```
+users(id, login UNIQUE, name)
+tasks(id, title, due_date, priority, done, owner_id → users NULL=commun, created_by)
+workouts(id, user_id → users, day, activity, duration_min, notes)      -- toujours perso
+recipes(id, title, servings, instructions, source_url, created_by, created_at)
+recipe_ingredients(id, recipe_id → recipes CASCADE, position, name, quantity, unit)
+shopping_items(id, name, quantity, unit, checked, recipe_id → recipes SET NULL, added_by)
+expenses(id, day, description, category, amount_cents, paid_by → users, created_by)
+expense_shares(expense_id → expenses CASCADE, user_id → users, amount_cents)
+```
+
+- **Argent en centimes entiers** (jamais de `float` : 0.1 + 0.2 ≠ 0.3).
+- **Parts** dans `expense_shares` : la somme des parts = le montant ; 50/50
+  par défaut (le centime restant au payeur), modifiable. Le **solde** =
+  ce que j'ai payé − ma part de tout. Un remboursement est une dépense
+  payée par l'un, part 100 % pour l'autre : pas de table en plus.
+  Fonctionne aussi à plus de deux personnes.
+- **Recettes → courses** : « ajoute la recette X pour 4 » multiplie les
+  quantités (portions), puis fusionne avec la liste existante (même nom et
+  même unité = on additionne).
+- **Import par URL** : fait par l'**onglet Recettes, sans le modèle**. Le
+  serveur télécharge la page et lit la recette au format standard
+  schema.org (`application/ld+json`), présent sur la plupart des sites :
+  0 token. Le modèle n'a **aucun** outil Internet (pas de canal de sortie).
+  Protection SSRF : http(s) seulement, adresse publique seulement (pas de
+  `127.0.0.1`, `192.168.x`, `100.x` Tailscale…), taille et délai limités.
+
+Étapes :
+1. Fondations : `db.py` + migrations, `users`, tâches commune/perso,
+   un module par domaine ; comportement inchangé.
+2. Recettes et liste de courses (outils + onglet).
+3. Finances (outils + onglet, solde).
+4. Accès de ma copine (Tailscale, outils selon la personne, tâche perso).
+
 ### Migration vers un serveur
 - Code par `git clone`, `.env` par `scp`, données par `rsync`
   (`~/.local/share/assistant/`) ; service `deploy/assistant-web.service`.

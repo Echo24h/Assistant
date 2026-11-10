@@ -26,7 +26,8 @@ class ToolError(Exception):
 
 
 class ToolBox:
-    def __init__(self, store, confirm: ConfirmFn, calendar=None, gmail=None):
+    def __init__(self, data, confirm: ConfirmFn, calendar=None, gmail=None):
+        """data: services.data.UserData, what this person can see and change."""
         self.confirm = confirm
         self.definitions = []  # what the model is told it can call
         self.functions = {}  # name -> Python function. This dict IS the allowlist.
@@ -34,7 +35,7 @@ class ToolBox:
         self.not_logged = set()  # tool outputs never written to the log
         self.owner = {}  # name -> (domain module, service), for check/describe
 
-        self._add(task_tools, store)
+        self._add(task_tools, data)
         if calendar is not None:
             self._add(calendar_tools, calendar)
         if gmail is not None:

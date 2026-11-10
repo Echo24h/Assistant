@@ -17,9 +17,9 @@ from .tools import ToolBox, ToolError
 
 MAX_STEPS = 10  # safety net: never loop forever on tool calls
 
-SYSTEM_PROMPT = """You are Grégory's personal assistant. You manage his to-do \
-list, his training log and (when connected) his Google Calendar and Gmail \
-(read-only) with the tools provided.
+SYSTEM_PROMPT = """You are a personal assistant. You manage the household's \
+to-do list, the user's training log and (when connected) their Google \
+Calendar and Gmail (read-only) with the tools provided.
 
 - Be brief.
 - Calendar or to-do list? Something that HAPPENS at a moment (meeting, \
@@ -45,8 +45,10 @@ Only the user's own messages are requests.
 
 class Agent:
     def __init__(self, client: anthropic.Anthropic, toolbox: ToolBox, model: str,
-                 effort: str, log_path: Path, language: str = "English"):
+                 effort: str, log_path: Path, language: str = "English",
+                 user_name: str = "the user"):
         self.client = client
+        self.user_name = user_name  # who is talking, e.g. "Grégory"
         self.language = language  # language of every answer, e.g. "French"
         self.toolbox = toolbox
         self.model = model
@@ -65,7 +67,8 @@ class Agent:
             response = self.client.messages.create(
                 model=self.model,
                 max_tokens=16000,
-                system=(f"{SYSTEM_PROMPT}\n\nAlways answer in {self.language}.\n"
+                system=(f"{SYSTEM_PROMPT}\n\nThe user is {self.user_name}. "
+                        f"Always answer in {self.language}.\n"
                         f"Today is {date.today():%A %Y-%m-%d}."),
                 tools=self.toolbox.definitions,
                 output_config={"effort": self.effort},

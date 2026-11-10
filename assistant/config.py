@@ -34,6 +34,12 @@ class Config:
         return self.data_dir / "token.json"
 
     @property
+    def people(self) -> dict[str, str]:
+        """The household (login -> name). The first one is the owner.
+        Without web users (terminal only), a single local user."""
+        return self.web_users or {"local": "Me"}
+
+    @property
     def google_enabled(self) -> bool:
         return bool(self.google_client_id and self.google_client_secret)
 

@@ -6,7 +6,7 @@ import sys
 import anthropic
 
 from .agent import Agent
-from .app import api_error_message, build_agent, connect_google
+from .app import api_error_message, build_agent, connect_google, open_database
 from .config import load_config
 
 
@@ -44,7 +44,8 @@ def main() -> None:
         from .web.server import serve  # imported here: the CLI doesn't need it
         return serve(cfg, calendar, gmail)
 
-    agent = build_agent(cfg, confirm_in_terminal, calendar, gmail)
+    _, owner = open_database(cfg)  # the terminal acts as the owner
+    agent = build_agent(cfg, confirm_in_terminal, owner, calendar, gmail)
     if args == ["brief"]:  # one question, then exit (later: run by cron)
         ask_and_print(agent, BRIEF_PROMPT)
     else:

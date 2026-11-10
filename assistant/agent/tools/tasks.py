@@ -1,4 +1,4 @@
-"""To-do list and training log tools (local SQLite, services/store.py).
+"""To-do list and training log tools (services/tasks.py, services/workouts.py).
 
 Each tool module gives the ToolBox (tools/__init__.py) the same things:
 DEFINITIONS (JSON schemas for the model), functions() (name -> Python
@@ -117,18 +117,19 @@ NEEDS_CONFIRMATION = {"delete_task"}
 NOT_LOGGED = set()
 
 
-def functions(store) -> dict:
+def functions(data) -> dict:
+    """data: services.data.UserData (tasks and workouts of this person)."""
     return {
-        "add_task": lambda a: store.add_task(a["title"], a["due_date"], a["priority"]),
-        "list_tasks": lambda a: store.list_tasks(a["include_done"]),
-        "complete_task": lambda a: found(store.complete_task(a["task_id"]), a),
+        "add_task": lambda a: data.tasks.add(a["title"], a["due_date"], a["priority"]),
+        "list_tasks": lambda a: data.tasks.list(a["include_done"]),
+        "complete_task": lambda a: found(data.tasks.set_done(a["task_id"], True), a),
         "set_task_priority": lambda a: found(
-            store.set_priority(a["task_id"], a["priority"]), a),
-        "delete_task": lambda a: found(store.delete_task(a["task_id"]), a),
-        "log_workout": lambda a: store.log_workout(
+            data.tasks.set_priority(a["task_id"], a["priority"]), a),
+        "delete_task": lambda a: found(data.tasks.delete(a["task_id"]), a),
+        "log_workout": lambda a: data.workouts.log(
             a["day"], a["activity"], a["duration_min"], a["notes"]
         ),
-        "list_workouts": lambda a: store.list_workouts(a["days"]),
+        "list_workouts": lambda a: data.workouts.list(a["days"]),
     }
 
 
@@ -138,12 +139,12 @@ def found(ok: bool, args: dict) -> dict:
     return {"ok": True}
 
 
-def check(store, name: str, args: dict) -> None:
+def check(data, name: str, args: dict) -> None:
     """Nothing to check before confirmation for tasks."""
 
 
-def describe(store, name: str, args: dict) -> str:
+def describe(data, name: str, args: dict) -> str:
     """The question shown to the user before a sensitive action."""
-    task = store.get_task(args["task_id"])
+    task = data.tasks.get(args["task_id"])
     label = task["title"] if task else f"#{args['task_id']} (not found)"
     return f"Delete task «{label}»?"

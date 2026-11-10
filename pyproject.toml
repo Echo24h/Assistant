@@ -26,3 +26,4 @@ packages = ["assistant", "assistant.agent", "assistant.agent.tools",
 
 [tool.setuptools.package-data]
 "assistant.web" = ["static/*.html", "static/*.css", "static/*.js"]
+"assistant.services" = ["migrations/*.sql"]

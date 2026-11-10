@@ -114,7 +114,9 @@ Code map, in three layers:
 ```
 assistant/
   services/   the core: data and Google access, no AI, no web
-              store.py (SQLite), google_auth.py, google_calendar.py, gmail.py
+              db.py + migrations/ (SQLite, numbered SQL files), users.py,
+              one module per domain (tasks.py, workouts.py), data.py (what
+              one person can see), google_auth.py, google_calendar.py, gmail.py
   agent/      the AI: loop.py (the hand-written agent loop) and tools/
               (one module per domain; tools/__init__.py = allowlist + confirmation)
   web/        the platform: server.py (identity, CSRF) and static/ (phone page)

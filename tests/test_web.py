@@ -46,8 +46,10 @@ def test_session_confirmation_round_trip():
 
 @pytest.fixture
 def server(monkeypatch):
-    monkeypatch.setattr(web, "build_agent", lambda cfg, confirm, cal, gm: FakeAgent(confirm))
-    cfg = NS(web_users={"me@gmail.com": "Grégory"}, web_dev_user=None, db_path=":memory:")
+    monkeypatch.setattr(web, "build_agent",
+                        lambda cfg, confirm, user, cal, gm: FakeAgent(confirm))
+    users = {"me@gmail.com": "Grégory"}
+    cfg = NS(web_users=users, people=users, web_dev_user=None, db_path=":memory:")
     httpd = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(App(cfg, None, None)))
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     yield f"http://127.0.0.1:{httpd.server_port}"
@@ -140,3 +142,16 @@ def test_static_files_and_security_headers(server):
     assert get(server, "/tasks.js")[0] == 200
     assert get(server, "/../.env")[0] == 404  # only listed files are ever sent
     assert get(server, "/server.py")[0] == 404
+
+
+def test_only_the_owner_gets_google(monkeypatch):
+    given = {}
+    monkeypatch.setattr(web, "build_agent", lambda cfg, confirm, user, cal, gm:
+                        given.update({user.name: (cal, gm)}) or FakeAgent(confirm))
+    users = {"me@gmail.com": "Grégory", "her@gmail.com": "Anna"}
+    cfg = NS(web_users=users, people=users, web_dev_user=None, db_path=":memory:")
+    app = App(cfg, calendar="my calendar", gmail="my gmail")
+
+    for login in users:
+        app.session(app.user({"Tailscale-User-Login": login}))
+    assert given == {"Grégory": ("my calendar", "my gmail"), "Anna": (None, None)}

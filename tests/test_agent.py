@@ -3,7 +3,7 @@
 from types import SimpleNamespace as NS
 
 from assistant.agent import Agent
-from assistant.services.store import Store
+from helpers import memory_data
 from assistant.agent.tools import ToolBox
 
 
@@ -34,10 +34,10 @@ class FakeClient:
 
 
 def make_agent(client, tmp_path, confirm=lambda q: True):
-    store = Store(":memory:")
-    agent = Agent(client, ToolBox(store, confirm), "test-model", "medium",
+    data = memory_data()
+    agent = Agent(client, ToolBox(data, confirm), "test-model", "medium",
                   tmp_path / "log.jsonl")
-    return agent, store
+    return agent, data
 
 
 def test_tool_call_then_answer(tmp_path):
@@ -45,10 +45,10 @@ def test_tool_call_then_answer(tmp_path):
         reply("tool_use", tool_use("t1", "add_task", {"title": "Buy milk", "due_date": None, "priority": "normal"})),
         reply("end_turn", text("Added.")),
     ])
-    agent, store = make_agent(client, tmp_path)
+    agent, data = make_agent(client, tmp_path)
 
     assert agent.ask("add buy milk") == "Added."
-    assert store.list_tasks(False)[0]["title"] == "Buy milk"
+    assert data.tasks.list(False)[0]["title"] == "Buy milk"
     # second request carries the tool result, linked by id
     result = agent.messages[2]["content"][0]  # user, assistant, tool results
     assert result["tool_use_id"] == "t1" and result["is_error"] is False

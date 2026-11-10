@@ -10,7 +10,9 @@ from .agent.tools import ToolBox
 from .services.gmail import Gmail
 from .services.google_auth import LoginRequired, get_credentials, google_service
 from .services.google_calendar import Calendar
-from .services.store import Store
+from .services.data import user_data
+from .services.db import connect
+from .services.users import User, sync_users
 
 
 def connect_google(cfg, interactive: bool):
@@ -29,16 +31,26 @@ def connect_google(cfg, interactive: bool):
     return calendar, gmail
 
 
-def build_agent(cfg, confirm, calendar, gmail) -> Agent:
-    """One agent = one conversation. Used by the terminal and by the web."""
-    store = Store(cfg.db_path)
+def open_database(cfg):
+    """Open (and upgrade) the database, sync the household; return (conn, owner)."""
+    conn = connect(cfg.db_path)
+    return conn, sync_users(conn, cfg.people)
+
+
+def build_agent(cfg, confirm, user: User, calendar, gmail) -> Agent:
+    """One agent = one conversation of one person. Used by the terminal and the web.
+
+    calendar and gmail: given for the owner only (they are the owner's accounts).
+    """
+    data = user_data(connect(cfg.db_path), user)  # own connection: runs in its own thread
     return Agent(
         client=anthropic.Anthropic(),  # reads ANTHROPIC_API_KEY from the environment
-        toolbox=ToolBox(store, confirm=confirm, calendar=calendar, gmail=gmail),
+        toolbox=ToolBox(data, confirm=confirm, calendar=calendar, gmail=gmail),
         model=cfg.model,
         effort=cfg.effort,
         log_path=cfg.log_path,
         language=cfg.language,
+        user_name=user.name,
     )
 
 

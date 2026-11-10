@@ -29,8 +29,8 @@ from urllib.parse import parse_qs, urlsplit
 
 import anthropic
 
-from ..app import api_error_message, build_agent
-from ..services.store import Store
+from ..app import api_error_message, build_agent, open_database
+from ..services.users import User, get_user
 from .api import BadRequest, TasksAPI
 
 STATIC_DIR = Path(__file__).parent / "static"
@@ -117,35 +117,43 @@ class App:
         self.cfg = cfg
         self.calendar = calendar
         self.gmail = gmail
+        self.conn, self.owner = open_database(cfg)
         self.sessions: dict[str, Session] = {}
         self.lock = threading.Lock()
-        self.tasks = TasksAPI(Store(cfg.db_path))  # direct features, no model
+        self.tasks = TasksAPI(self.conn)  # direct features, no model
 
-    def user(self, headers) -> str | None:
-        """The allowed user's login for this request, or None."""
+    def user(self, headers) -> User | None:
+        """The allowed user making this request, or None."""
         login = (headers.get("Tailscale-User-Login") or "").strip().lower()
-        if login:
-            return login if login in self.cfg.web_users else None
-        return self.cfg.web_dev_user  # None unless testing locally
+        if not login:
+            login = self.cfg.web_dev_user  # None unless testing locally
+        if login not in self.cfg.web_users:
+            return None
+        with self.tasks.lock:  # the shared connection
+            return get_user(self.conn, login)
 
-    def session(self, login: str, new: bool = False) -> Session:
+    def session(self, user: User, new: bool = False) -> Session:
+        # Google accounts are the owner's: only the owner's agent gets them.
+        is_owner = user.id == self.owner.id
+        calendar, gmail = (self.calendar, self.gmail) if is_owner else (None, None)
         with self.lock:
-            if new or login not in self.sessions:
-                self.sessions[login] = Session(
-                    lambda confirm: build_agent(self.cfg, confirm, self.calendar, self.gmail))
-            return self.sessions[login]
+            if new or user.login not in self.sessions:
+                self.sessions[user.login] = Session(
+                    lambda confirm: build_agent(self.cfg, confirm, user, calendar, gmail))
+            return self.sessions[user.login]
 
 
 def make_handler(app: App):
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
-            if not app.user(self.headers):
+            user = app.user(self.headers)
+            if not user:
                 return self.send_json({"error": "forbidden"}, HTTPStatus.FORBIDDEN)
             url = urlsplit(self.path)
             if url.path in STATIC:
                 return self.send_static(*STATIC[url.path])
             query = {k: v[0] for k, v in parse_qs(url.query).items()}
-            result = app.tasks.get(url.path, query)
+            result = app.tasks.get(user, url.path, query)
             if result is None:
                 return self.send_json({"error": "not found"}, HTTPStatus.NOT_FOUND)
             self.send_json(result)
@@ -160,8 +168,8 @@ def make_handler(app: App):
             self.wfile.write(body)
 
         def do_POST(self):
-            login = app.user(self.headers)
-            if not login:
+            user = app.user(self.headers)
+            if not user:
                 return self.send_json({"error": "forbidden"}, HTTPStatus.FORBIDDEN)
             if not self.same_origin():
                 return self.send_json({"error": "bad origin"}, HTTPStatus.FORBIDDEN)
@@ -171,15 +179,15 @@ def make_handler(app: App):
                                       HTTPStatus.BAD_REQUEST)
 
             if self.path == "/api/ask" and isinstance(data.get("text"), str):
-                event = app.session(login).ask(data["text"].strip()[:4000])
+                event = app.session(user).ask(data["text"].strip()[:4000])
             elif self.path == "/api/confirm" and isinstance(data.get("yes"), bool):
-                event = app.session(login).answer(data["yes"])
+                event = app.session(user).answer(data["yes"])
             elif self.path == "/api/reset":
-                app.session(login, new=True)
-                event = {"type": "reset", "name": app.cfg.web_users.get(login, login)}
+                app.session(user, new=True)
+                event = {"type": "reset", "name": user.name}
             else:  # direct features (web/api.py)
                 try:
-                    event = app.tasks.post(self.path, data)
+                    event = app.tasks.post(user, self.path, data)
                 except BadRequest as e:
                     return self.send_json({"error": str(e)}, HTTPStatus.BAD_REQUEST)
                 if event is None:

@@ -9,7 +9,7 @@ import pytest
 
 from assistant.agent import Agent
 from assistant.services.gmail import Gmail, body_text
-from assistant.services.store import Store
+from helpers import memory_data
 from assistant.agent.tools import ToolBox, ToolError
 
 
@@ -57,7 +57,7 @@ def test_results_are_marked_untrusted(service):
 
 
 def test_no_tool_can_send_email(service):
-    box = ToolBox(Store(":memory:"), confirm=lambda q: True, gmail=Gmail(service))
+    box = ToolBox(memory_data(), confirm=lambda q: True, gmail=Gmail(service))
     names = {t["name"] for t in box.definitions}
     assert names >= {"search_emails", "read_email"}
     assert not any("send" in n or "draft" in n for n in names)
@@ -74,7 +74,7 @@ def test_email_content_is_not_logged(service, tmp_path):
            content=[NS(type="text", text="An invoice.")]),
     ]
     client = NS(messages=NS(create=lambda **kw: responses.pop(0)))
-    box = ToolBox(Store(":memory:"), confirm=lambda q: True, gmail=Gmail(service))
+    box = ToolBox(memory_data(), confirm=lambda q: True, gmail=Gmail(service))
     agent = Agent(client, box, "test-model", "low", tmp_path / "log.jsonl")
 
     agent.ask("what is my last email?")
