@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from assistant.services.google_calendar import Calendar, event_body
+from assistant.services.google_calendar import Calendar, event_body, short_event
 from assistant.services.store import Store
 from assistant.agent.tools import ToolBox, ToolError
 
@@ -42,7 +42,7 @@ def test_event_body_times_and_no_guests():
 
 def test_create_needs_confirmation_and_sends_no_email(service):
     args = {"summary": "Dentist", "start": "2026-11-12T14:00", "end": "2026-11-12T15:00",
-            "description": None, "location": None}
+            "description": None, "location": None, "repeat": "never"}
     events = service.events.return_value
 
     with pytest.raises(ToolError, match="declined"):
@@ -53,6 +53,69 @@ def test_create_needs_confirmation_and_sends_no_email(service):
     kwargs = events.insert.call_args.kwargs
     assert kwargs["sendUpdates"] == "none"
     assert "attendees" not in kwargs["body"]
+    assert "recurrence" not in kwargs["body"]  # once by default
+
+
+def test_birthday_repeats_every_year(service):
+    asked = []
+    calendar = Calendar(service, "Europe/Zurich")
+    box = ToolBox(Store(":memory:"), confirm=lambda q: asked.append(q) or True,
+                  calendar=calendar)
+    box.run("create_event", {"summary": "Anniversaire Anna", "start": "2026-12-03",
+                             "end": "2026-12-04", "description": None, "location": None,
+                             "repeat": "yearly"})
+    body = service.events.return_value.insert.call_args.kwargs["body"]
+    assert body["recurrence"] == ["RRULE:FREQ=YEARLY"]
+    assert body["start"] == {"date": "2026-12-03"}
+    assert "repeats yearly" in asked[0]  # the user sees it before saying yes
+
+
+def test_add_birthday_uses_google_birthday_type(service):
+    asked = []
+    calendar = Calendar(service, "Europe/Zurich")
+    box = ToolBox(Store(":memory:"), confirm=lambda q: asked.append(q) or True,
+                  calendar=calendar)
+    box.run("add_birthday", {"person": "Anna", "date": "2027-11-03"})
+    kwargs = service.events.return_value.insert.call_args.kwargs
+    body = kwargs["body"]
+    assert body["eventType"] == "birthday"
+    assert body["recurrence"] == ["RRULE:FREQ=YEARLY"]
+    assert body["start"] == {"date": "2027-11-03"} and body["end"] == {"date": "2027-11-04"}
+    assert kwargs["sendUpdates"] == "none" and "attendees" not in body
+    assert "Anna" in asked[0]
+
+
+def test_result_says_when_event_repeats():
+    assert short_event({**GOOGLE_EVENT, "recurrence": ["RRULE:FREQ=YEARLY"]})["repeats"] == "yearly"
+    assert "repeats" not in short_event(GOOGLE_EVENT)  # no extra tokens for one-off events
+
+
+def test_holidays_follow_the_weekday_not_the_date(service):
+    asked = []
+    box = ToolBox(Store(":memory:"), confirm=lambda q: asked.append(q) or True,
+                  calendar=Calendar(service, "Europe/Zurich"))
+    args = {"summary": "Fête des pères", "start": "2027-06-20", "end": "2027-06-21",
+            "description": None, "location": None, "repeat": "yearly_nth_weekday"}
+    box.run("create_event", args)
+    body = service.events.return_value.insert.call_args.kwargs["body"]
+    assert body["recurrence"] == ["RRULE:FREQ=YEARLY;BYMONTH=6;BYDAY=3SU"]
+    assert asked[0] == ("Create «Fête des pères», Sun 20 Jun (all day), "
+                        "every year on the 3rd Sunday of June?")
+
+    box.run("create_event", {**args, "start": "2027-05-30", "end": "2027-05-31",
+                             "repeat": "yearly_last_weekday"})
+    body = service.events.return_value.insert.call_args.kwargs["body"]
+    assert body["recurrence"] == ["RRULE:FREQ=YEARLY;BYMONTH=5;BYDAY=-1SU"]
+
+    with pytest.raises(ToolError, match="not the last"):  # 23 May is not the last Sunday
+        box.run("create_event", {**args, "start": "2027-05-23", "end": "2027-05-24",
+                                 "repeat": "yearly_last_weekday"})
+    assert len(asked) == 2  # refused before asking
+
+
+def test_unknown_repeat_is_refused():
+    with pytest.raises(ValueError, match="repeat"):
+        event_body("x", repeat="RRULE:FREQ=SECONDLY")
 
 
 def test_list_events_needs_no_confirmation(service):

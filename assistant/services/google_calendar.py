@@ -15,6 +15,31 @@ from googleapiclient.errors import HttpError
 CALENDAR_ID = "primary"  # the user's main calendar
 NO_EMAILS = "none"  # value of sendUpdates: Google never emails anyone
 
+# The model picks one of these words; the code writes the Google rule itself
+# (RFC 5545 RRULE), so the model never sends a raw rule.
+REPEAT_RULES = {
+    "daily": "RRULE:FREQ=DAILY",
+    "weekly": "RRULE:FREQ=WEEKLY",
+    "monthly": "RRULE:FREQ=MONTHLY",
+    "yearly": "RRULE:FREQ=YEARLY",  # birthdays, anniversaries
+}
+# Holidays like "3rd Sunday of June" or "last Sunday of May": the rule is
+# computed from the start date (see weekday_rule).
+WEEKDAY_REPEATS = ("yearly_nth_weekday", "yearly_last_weekday")
+DAY_CODES = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"]
+
+
+def weekday_rule(start: str, repeat: str) -> str:
+    """"2027-06-20" (3rd Sunday of June) -> "RRULE:FREQ=YEARLY;BYMONTH=6;BYDAY=3SU"."""
+    day = date.fromisoformat(start[:10])
+    if repeat == "yearly_last_weekday":
+        if (day + timedelta(days=7)).month == day.month:
+            raise ValueError(f"{day} is not the last {day:%A} of its month.")
+        position = -1
+    else:
+        position = (day.day - 1) // 7 + 1  # 1st, 2nd, 3rd... of the month
+    return f"RRULE:FREQ=YEARLY;BYMONTH={day.month};BYDAY={position}{DAY_CODES[day.weekday()]}"
+
 
 def to_google_time(value: str, tz: str) -> dict:
     """"2026-11-12" -> all-day event; "2026-11-12T14:30" -> timed event."""
@@ -24,9 +49,15 @@ def to_google_time(value: str, tz: str) -> dict:
 
 
 def event_body(summary=None, start=None, end=None, description=None,
-               location=None, tz="UTC") -> dict:
+               location=None, tz="UTC", repeat=None) -> dict:
     """Build the JSON sent to Google. There is deliberately no 'attendees'."""
     body = {}
+    if repeat in WEEKDAY_REPEATS:
+        body["recurrence"] = [weekday_rule(start, repeat)]
+    elif repeat not in (None, "never"):
+        if repeat not in REPEAT_RULES:
+            raise ValueError(f"Unknown repeat value: {repeat}.")
+        body["recurrence"] = [REPEAT_RULES[repeat]]
     if summary is not None:
         body["summary"] = summary
     if start is not None:
@@ -42,7 +73,7 @@ def event_body(summary=None, start=None, end=None, description=None,
 
 def short_event(event: dict) -> dict:
     """Keep only what the model needs (less text = fewer tokens)."""
-    return {
+    short = {
         "id": event["id"],
         "summary": event.get("summary", "(no title)"),
         "start": event["start"].get("dateTime", event["start"].get("date")),
@@ -51,7 +82,19 @@ def short_event(event: dict) -> dict:
         # Event text can be written by strangers (invitations): keep it short.
         "description": (event.get("description") or "")[:200] or None,
         "has_guests": bool(event.get("attendees")),
+        # One occurrence of a repeating event: its id changes only this date,
+        # the series_id changes every occurrence.
+        "series_id": event.get("recurringEventId"),
     }
+    # Only on a repeating event (as Google returns it after creating it):
+    # the model can then confirm "every year" instead of guessing.
+    rules = event.get("recurrence") or []
+    words = [word for word, rule in REPEAT_RULES.items() if rule in rules]
+    if words:
+        short["repeats"] = words[0]
+    elif rules:
+        short["repeats"] = rules[0].removeprefix("RRULE:")  # e.g. "FREQ=YEARLY;BYDAY=3SU"
+    return short
 
 
 class Calendar:
@@ -105,6 +148,8 @@ class Calendar:
         if len(start) == 10 and len(end) == 10:
             # All-day events: Google's end is the day AFTER the last day.
             last_day = date.fromisoformat(end) - timedelta(days=1)
+            if last_day <= date.fromisoformat(start):  # a single day
+                return self.pretty(start)
             return f"{self.pretty(start)[:10]} → {last_day:%a %d %b} (all day)"
         first, last = self.pretty(start), self.pretty(end)
         if first[:10] == last[:10] and "all day" not in first:
@@ -123,8 +168,29 @@ class Calendar:
     def get_event(self, event_id: str) -> dict:
         return short_event(self._call(self.events.get(calendarId=CALENDAR_ID, eventId=event_id)))
 
-    def create_event(self, summary, start, end, description, location) -> dict:
-        body = event_body(summary, start, end, description, location, self.tz)
+    def create_event(self, summary, start, end, description, location, repeat=None) -> dict:
+        body = event_body(summary, start, end, description, location, self.tz, repeat)
+        created = self._call(self.events.insert(
+            calendarId=CALENDAR_ID, body=body, sendUpdates=NO_EMAILS))
+        return short_event(created)
+
+    def add_birthday(self, person: str, day: str) -> dict:
+        """A real birthday: shown in Google's "Birthdays" calendar.
+
+        Google's rules for eventType "birthday": one all-day event, repeating
+        yearly, transparent (not "busy") and private.
+        """
+        first = date.fromisoformat(day)
+        body = {
+            "summary": f"Anniversaire {person}",
+            "start": {"date": first.isoformat()},
+            "end": {"date": (first + timedelta(days=1)).isoformat()},
+            "recurrence": [REPEAT_RULES["yearly"]],
+            "eventType": "birthday",
+            "birthdayProperties": {"type": "birthday"},
+            "transparency": "transparent",
+            "visibility": "private",
+        }
         created = self._call(self.events.insert(
             calendarId=CALENDAR_ID, body=body, sendUpdates=NO_EMAILS))
         return short_event(created)

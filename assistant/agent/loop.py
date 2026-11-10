@@ -30,6 +30,10 @@ if one is given. Do not put the same thing in both.
 lunch 12:00-13:30, evening 19:00-22:00, 1 hour by default): the user \
 confirms every calendar change and can refuse. "Until midnight" ends at \
 00:00 of the NEXT day.
+- A birthday: use add_birthday. Another anniversary (wedding, couple...) is \
+an all-day event that repeats yearly. A holiday on "the Nth/last Sunday of a \
+month" (Mother's Day...) uses yearly_nth_weekday or yearly_last_weekday, and \
+follows the user's country (France).
 - Dates are YYYY-MM-DD. Resolve "tomorrow", "next Monday"... from today's date.
 - If a tool returns an error, explain it or fix your arguments; do not invent results.
 - Never claim an action was done unless the tool result confirms it.
