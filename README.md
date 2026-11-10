@@ -13,8 +13,8 @@ evaluation.
   results and continues until the task is done. Written by hand, no agent
   framework, to keep every step visible.
 - **Tools**: to-do list and training log (local SQLite); Google Calendar
-  through Google's API client, with the narrow `calendar.events` scope;
-  Gmail read-only (coming next).
+  through Google's API client, with the narrow `calendar.events` scope
+  (repeating events, birthdays); Gmail read-only.
 - **Model routing on a small budget**: the small model (Haiku) by default,
   with low effort; the larger one (Sonnet) only where the evaluation shows
   the small one is not good enough.
@@ -48,6 +48,9 @@ prompt-injection attempts) measures:
 Results will be published here.
 
 ## Setup
+
+Full step-by-step guide (Google console, Tailscale, server, update,
+troubleshooting): [docs/INSTALL.md](docs/INSTALL.md). In short:
 
 ```bash
 git clone git@github.com:Echo24h/Assistant.git && cd Assistant
@@ -132,5 +135,6 @@ printf '#!/bin/sh\nexec gitleaks protect --staged --redact -c .gitleaks.toml\n' 
 - [x] Google Calendar: read, and edit with confirmation
 - [x] Gmail read-only (content never logged), morning brief
 - [x] Phone access: private web page through Tailscale
+- [x] Tasks tab without the model (0 tokens), task priorities
 - [ ] Evaluation on synthetic emails
 - [ ] Email drafts with confirmation
