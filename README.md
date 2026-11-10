@@ -14,8 +14,9 @@ evaluation.
   framework, to keep every step visible.
 - **Tools**: to-do list and training log (local SQLite); Gmail and Google
   Calendar through MCP servers, read-only at first.
-- **Model routing**: a larger model for the main agent, a smaller one for
-  simple repeated tasks (email triage, date extraction).
+- **Model routing on a small budget**: the small model (Haiku) by default,
+  with low effort; the larger one (Sonnet) only where the evaluation shows
+  the small one is not good enough.
 
 ## Safety
 
@@ -40,6 +41,19 @@ prompt-injection attempts) measures:
 - resistance to injection (no tool called because an email asked for it).
 
 Results will be published here.
+
+## Run it
+
+```bash
+python3 -m venv .venv && . .venv/bin/activate
+pip install -e '.[dev]'
+cp .env.example .env && chmod 600 .env   # then set ANTHROPIC_API_KEY
+python -m assistant                      # chat in the terminal
+pytest                                   # tests use a fake client, no API key needed
+```
+
+Code map: `assistant/agent.py` (the loop), `assistant/tools.py` (tool
+schemas, allowlist, confirmation gate), `assistant/store.py` (SQLite).
 
 ## Status
 

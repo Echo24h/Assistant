@@ -1,0 +1,35 @@
+"""Settings read from the environment (and from .env, which is never committed)."""
+
+import os
+from dataclasses import dataclass
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+
+@dataclass(frozen=True)
+class Config:
+    model: str  # main agent
+    fast_model: str  # simple repeated tasks (email triage, later)
+    effort: str  # how hard the model thinks: low / medium / high
+    data_dir: Path  # real data lives here, outside the repository
+
+    @property
+    def db_path(self) -> Path:
+        return self.data_dir / "assistant.db"
+
+    @property
+    def log_path(self) -> Path:
+        return self.data_dir / "tool_calls.jsonl"
+
+
+def load_config() -> Config:
+    load_dotenv()  # reads .env in the current directory, if present
+    data_dir = Path(os.getenv("ASSISTANT_DATA_DIR", "~/.local/share/assistant")).expanduser()
+    data_dir.mkdir(parents=True, exist_ok=True)
+    return Config(
+        model=os.getenv("ASSISTANT_MODEL", "claude-haiku-5-5"),
+        fast_model=os.getenv("ASSISTANT_FAST_MODEL", "claude-haiku-5-5"),
+        effort=os.getenv("ASSISTANT_EFFORT", "low"),
+        data_dir=data_dir,
+    )

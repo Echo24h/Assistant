@@ -13,7 +13,9 @@ Contexte et décisions : lire `docs/PLAN.md` avant toute modification.
   - confirmation des actions sensibles **dans le code** ;
   - aucun secret ni donnée personnelle dans le dépôt (`.env`, données
     dans `~/.local/share/assistant/`) ; faux mails seulement dans `evals/`.
-- Modèles : `claude-sonnet-5-5` pour l'agent, `claude-haiku-5-5` pour le
-  tri ; noms dans la config, pas en dur partout.
+- Modèles : `claude-haiku-5-5` par défaut (agent et tri, effort `low`),
+  `claude-sonnet-5-5` seulement si l'évaluation montre que Haiku ne suffit
+  pas ; noms dans la config, pas en dur partout.
+- Très petit budget : chaque appel API coûte, tester avec le faux client.
 - Code et README en anglais (dépôt public) ; `docs/PLAN.md` en français.
 - Commiter ou pousser seulement si Grégory le demande.

@@ -36,12 +36,19 @@ Décisions prises le 10.11.2026. Document interne (en français, pour moi).
 
 ## Modèles (API Claude)
 
-- **Sonnet 5.5** (`claude-sonnet-5-5`) pour l'agent principal : bon en
-  appels d'outils, coût raisonnable.
-- **Haiku 5.5** (`claude-haiku-5-5`) pour les tâches simples et
-  répétées : tri des mails, classement, extraction de dates.
+Décision du 10.11.2026 : **très petit budget** (5 $ de crédits).
+
+- **Haiku 5.5** (`claude-haiku-5-5`) **par défaut**, pour l'agent comme
+  pour le tri, avec l'effort `low`. Environ 20 fois moins cher que Sonnet
+  (0,10 $ / 0,50 $ par million de tokens en entrée / sortie) : ~0,07
+  centime par question, ~7 000 questions avec 5 $.
+- **Sonnet 5.5** (`claude-sonnet-5-5`) seulement là où l'évaluation
+  (Jour 3) montre que Haiku ne suffit pas.
 - Pas besoin d'Opus.
-- *Model routing* : choisir le modèle selon la tâche (point d'entretien).
+- Économies : sessions courtes (tout l'historique est renvoyé à chaque
+  appel), tests avec le faux client (gratuits).
+- *Model routing* : choisir le modèle selon la tâche (point d'entretien),
+  **mesuré** : comparer Haiku et Sonnet sur les mêmes faux mails.
 - Option plus tard : modèle local (Ollama, Qwen ou Llama) pour du tri
   très sensible ; moins fiable pour enchaîner des outils.
 - Vérifier les prix actuels sur la page tarifs d'Anthropic.
@@ -52,7 +59,8 @@ Décisions prises le 10.11.2026. Document interne (en français, pour moi).
   l'API**. Utile tout de suite pour ma vie quotidienne : autoriser les
   connecteurs Gmail et Google Calendar dans claude.ai (sans coder).
 - **API** : facturée à l'usage, **prépayée**.
-  - Charger 10 $ de crédits, **rechargement automatique désactivé**.
+  - Charger 5 $ de crédits (valables 1 an), **rechargement automatique
+    désactivé**.
   - Fixer une **limite mensuelle de dépenses** dans la console.
   - Perte maximale : ce qui est chargé. Usage personnel estimé : quelques
     dollars par mois.
@@ -113,7 +121,7 @@ Règle : **ne jamais donner le troisième** à l'agent qui lit mes mails.
 
 ## Feuille de route
 
-- **Jour 1** (local, sans Google) : boucle de l'agent avec l'API (Sonnet),
+- **Jour 1** (local, sans Google) : boucle de l'agent avec l'API (Haiku),
   outils todo et entraînement sur SQLite, interface en ligne de commande.
   Déjà utile, aucun risque.
 - **Jour 2** : Gmail et Calendar en lecture seule (MCP), « brief du
