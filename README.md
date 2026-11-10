@@ -76,18 +76,37 @@ All settings and secrets live in `.env` (never committed). Personal data
    In *Testing* mode Google expires the login after 7 days: run
    `python -m assistant login` again.
 
+## Phone access (Tailscale)
+
+`python -m assistant web` serves a small chat page on `127.0.0.1` only.
+[Tailscale](https://tailscale.com) makes it reachable from my phone,
+anywhere, without opening any port:
+
+```bash
+sudo tailscale serve --bg 8765   # HTTPS, visible only to my own devices
+```
+
+- Requests are accepted only from Tailscale logins listed in
+  `ASSISTANT_WEB_USERS` (header `Tailscale-User-Login`).
+- CSRF: JSON bodies only, and the `Origin` header is checked.
+- Confirmations appear as ✅ / ❌ buttons; replies are inserted as text,
+  never HTML, so email content cannot inject code into the page.
+- To run it on a server: `deploy/assistant-web.service`.
+
 ## Run it
 
 ```bash
 python -m assistant          # chat in the terminal
 python -m assistant brief    # morning brief: today's events, important email, tasks
+python -m assistant web      # chat page for the phone (see above)
 pytest                       # tests use fake clients: no API key, no Google account
 ```
 
 Code map: `assistant/agent.py` (the loop), `assistant/tools.py` (tool
 schemas, allowlist, confirmation gate), `assistant/store.py` (SQLite),
 `assistant/google_auth.py` (Google login), `assistant/google_calendar.py`,
-`assistant/gmail.py` (read-only).
+`assistant/gmail.py` (read-only), `assistant/web.py` and
+`assistant/static/index.html` (phone).
 
 A pre-commit hook runs gitleaks with `.gitleaks.toml` to block committed
 secrets (Anthropic keys, Google client secrets):
@@ -102,5 +121,6 @@ printf '#!/bin/sh\nexec gitleaks protect --staged --redact -c .gitleaks.toml\n' 
 - [x] Agent loop, to-do and training tools (local)
 - [x] Google Calendar: read, and edit with confirmation
 - [x] Gmail read-only (content never logged), morning brief
+- [x] Phone access: private web page through Tailscale
 - [ ] Evaluation on synthetic emails
 - [ ] Email drafts with confirmation

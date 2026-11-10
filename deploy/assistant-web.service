@@ -1,0 +1,21 @@
+# systemd user service for the web interface (on a server or a Raspberry Pi).
+# Install:
+#   mkdir -p ~/.config/systemd/user
+#   cp deploy/assistant-web.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now assistant-web
+#   loginctl enable-linger $USER     # keep running after logout
+# Then, once: sudo tailscale serve --bg 8765
+
+[Unit]
+Description=Personal assistant, web interface (127.0.0.1 only, behind tailscale serve)
+After=network-online.target
+
+[Service]
+WorkingDirectory=%h/Assistant
+ExecStart=%h/Assistant/.venv/bin/python -m assistant web
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

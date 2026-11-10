@@ -24,7 +24,9 @@ CREATE TABLE IF NOT EXISTS workouts (
 
 class Store:
     def __init__(self, db_path: Path | str):
-        self.conn = sqlite3.connect(db_path)
+        # check_same_thread=False: the web interface runs each conversation in
+        # its own thread; one conversation never runs two turns at once.
+        self.conn = sqlite3.connect(db_path, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row  # rows behave like dicts
         self.conn.executescript(SCHEMA)
 

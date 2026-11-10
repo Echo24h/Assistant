@@ -126,6 +126,45 @@ Règle : **ne jamais donner le troisième** à l'agent qui lit mes mails.
   vraies données vivent hors du dépôt (`~/.local/share/assistant/`).
 - Serveur : SSH par clé uniquement, pare-feu, mises à jour automatiques.
 
+## Téléphone (décidé le 10.11.2026)
+
+- **Page web privée via Tailscale**, pas Telegram (Telegram lit les
+  messages des bots, pas de chiffrement de bout en bout) ni Signal (trop
+  complexe). `python -m assistant web` : bibliothèque standard Python,
+  écoute sur `127.0.0.1` seulement ; `tailscale serve` l'expose en HTTPS
+  à mes appareils uniquement. Aucun port ouvert.
+- **Identité** : en-tête `Tailscale-User-Login`, accepté seulement si le
+  login est dans `ASSISTANT_WEB_USERS`. Pas d'en-tête = refus.
+- **CSRF** : corps JSON obligatoire (impose un preflight CORS jamais
+  autorisé) et vérification de l'en-tête `Origin`.
+- **Confirmations** : boutons ✅ / ❌. L'agent tourne dans un thread qui
+  attend la réponse dans une file (`queue`) ; sans réponse en 5 min = non.
+- Les réponses sont insérées comme texte (`textContent`), jamais en HTML :
+  un mail piégé ne peut pas injecter de code dans la page.
+
+### Plus tard : ma copine
+- Partage de la seule machine de l'assistant (*node sharing*) ou
+  invitation dans le tailnet. **À vérifier** : Tailscale ne transmet
+  peut-être pas l'identité pour une machine partagée ; sinon l'inviter
+  comme utilisateur du tailnet.
+- **Outils autorisés selon la personne, imposés dans le code** : tâches
+  communes, finances du couple pour nous deux ; mon Gmail, mon agenda et
+  mes tâches perso pour moi seul.
+- Courses : plutôt un **outil recettes** qui propose une liste de courses
+  (à concevoir plus tard).
+- Finances : **saisie manuelle** d'abord (qui a payé quoi, qui doit
+  combien). Connexion bancaire : non pour l'instant (gros accès en plus,
+  et l'agent lit des mails écrits par des inconnus).
+
+### Migration vers un serveur
+- Code par `git clone`, `.env` par `scp`, données par `rsync`
+  (`~/.local/share/assistant/`) ; service `deploy/assistant-web.service`.
+- Tailscale avec `--ssh` : SSH sans port ouvert, pare-feu fermé en entrée.
+- Avant : **passer l'application Google en production** (sinon le token
+  expire tous les 7 jours) ; faire `login` sur le PC et copier `token.json`.
+- VPS (Infomaniak, Suisse) : toujours en ligne, mais l'hébergeur peut
+  accéder au disque. Raspberry Pi : les données restent à la maison.
+
 ## Évaluation (ce qui en fait un projet portfolio)
 
 - Jeu de test d'environ **50 faux mails** : réunion, facture, spam,

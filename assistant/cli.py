@@ -1,4 +1,5 @@
-"""Command-line interface: a simple chat loop in the terminal."""
+"""Command-line interface: chat in the terminal, morning brief, Google login,
+and the web interface for the phone (`python -m assistant web`)."""
 
 import sys
 
@@ -54,25 +55,47 @@ def main() -> None:
     args = sys.argv[1:]
     if args == ["login"]:
         return login(cfg)
-    if args not in ([], ["brief"]):
-        sys.exit("Usage: python -m assistant [login | brief]")
+    if args not in ([], ["brief"], ["web"]):
+        sys.exit("Usage: python -m assistant [login | brief | web]")
 
-    store = Store(cfg.db_path)
     calendar, gmail = connect_google(cfg, interactive=False)
 
-    agent = Agent(
-        client=anthropic.Anthropic(),  # reads ANTHROPIC_API_KEY from the environment
-        toolbox=ToolBox(store, confirm=confirm_in_terminal, calendar=calendar, gmail=gmail),
-        model=cfg.model,
-        effort=cfg.effort,
-        log_path=cfg.log_path,
-        language=cfg.language,
-    )
+    if args == ["web"]:
+        from .web import serve  # imported here: the CLI doesn't need it
+        return serve(cfg, calendar, gmail)
+
+    agent = build_agent(cfg, confirm_in_terminal, calendar, gmail)
     if args == ["brief"]:  # one question, then exit (later: run by cron)
         ask_and_print(agent, BRIEF_PROMPT)
     else:
         chat(agent, cfg.model)
     print(f"\nTokens used: {agent.input_tokens} in, {agent.output_tokens} out")
+
+
+def build_agent(cfg, confirm, calendar, gmail) -> Agent:
+    """One agent = one conversation. Used by the terminal and by the web."""
+    store = Store(cfg.db_path)
+    return Agent(
+        client=anthropic.Anthropic(),  # reads ANTHROPIC_API_KEY from the environment
+        toolbox=ToolBox(store, confirm=confirm, calendar=calendar, gmail=gmail),
+        model=cfg.model,
+        effort=cfg.effort,
+        log_path=cfg.log_path,
+        language=cfg.language,
+    )
+
+
+def api_error_message(e: anthropic.APIError) -> str:
+    """A short message for the user when the Claude API fails."""
+    if isinstance(e, anthropic.AuthenticationError):
+        return "Invalid or missing ANTHROPIC_API_KEY (see .env.example)."
+    if isinstance(e, anthropic.RateLimitError):
+        return "Rate limited, try again in a moment."
+    if isinstance(e, anthropic.APIStatusError):
+        return f"API error {e.status_code}: {e.message}"
+    if isinstance(e, anthropic.APIConnectionError):
+        return "Network error: cannot reach the API."
+    return f"API error: {e}"
 
 
 def chat(agent: Agent, model: str) -> None:
@@ -90,15 +113,9 @@ def ask_and_print(agent: Agent, text: str) -> bool:
     """Ask the agent and print the answer. Return False if we should stop."""
     try:
         print(agent.ask(text))
-    except anthropic.AuthenticationError:
-        print("Invalid or missing ANTHROPIC_API_KEY (see .env.example).")
-        return False
-    except anthropic.RateLimitError:
-        print("Rate limited, try again in a moment.")
-    except anthropic.APIStatusError as e:
-        print(f"API error {e.status_code}: {e.message}")
-    except anthropic.APIConnectionError:
-        print("Network error: cannot reach the API.")
+    except anthropic.APIError as e:
+        print(api_error_message(e))
+        return not isinstance(e, anthropic.AuthenticationError)
     return True
 
 
