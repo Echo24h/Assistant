@@ -12,8 +12,9 @@ evaluation.
 - **Agent loop**: the model receives a goal, calls tools, reads the
   results and continues until the task is done. Written by hand, no agent
   framework, to keep every step visible.
-- **Tools**: to-do list and training log (local SQLite); Gmail and Google
-  Calendar through MCP servers, read-only at first.
+- **Tools**: to-do list and training log (local SQLite); Google Calendar
+  through Google's API client, with the narrow `calendar.events` scope;
+  Gmail read-only (coming next).
 - **Model routing on a small budget**: the small model (Haiku) by default,
   with low effort; the larger one (Sonnet) only where the evaluation shows
   the small one is not good enough.
@@ -24,7 +25,10 @@ An agent that reads email reads text written by strangers, so it must
 not combine private data, untrusted content and a way to send data out
 (the "lethal trifecta").
 
-- Email and calendar access are read-only; the agent can never send email.
+- Email access is read-only; the agent can never send email.
+- Calendar: the agent can read and edit events, but every change needs my
+  confirmation, and events never get guests (a guest receives an email,
+  which would be a way to send data out).
 - Sensitive actions (creating an event, drafting a reply) require my
   confirmation, enforced in code, not in the prompt.
 - Tools are an explicit allowlist; every tool call is logged locally.
@@ -42,22 +46,56 @@ prompt-injection attempts) measures:
 
 Results will be published here.
 
+## Setup
+
+```bash
+git clone git@github.com:Echo24h/Assistant.git && cd Assistant
+python3 -m venv .venv && . .venv/bin/activate
+pip install -e '.[dev]'
+cp .env.example .env && chmod 600 .env   # then fill in the keys below
+```
+
+All settings and secrets live in `.env` (never committed). Personal data
+(SQLite database, Google token, tool-call log) lives in
+`~/.local/share/assistant/`, readable only by you.
+
+1. **Claude**: create an API key at console.anthropic.com and set
+   `ANTHROPIC_API_KEY`.
+2. **Google Calendar** (optional; without it the calendar tools are off):
+   - in Google Cloud, create a project, enable the Google Calendar API;
+   - Google Auth Platform: audience *External*, status *Testing*, add
+     yourself as a test user; data access: only `.../auth/calendar.events`;
+   - create an OAuth client of type *Desktop app* and copy its id and
+     secret into `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`;
+   - log in once (opens the browser, saves a token):
+     `python -m assistant login`.
+
+   In *Testing* mode Google expires the login after 7 days: run
+   `python -m assistant login` again.
+
 ## Run it
 
 ```bash
-python3 -m venv .venv && . .venv/bin/activate
-pip install -e '.[dev]'
-cp .env.example .env && chmod 600 .env   # then set ANTHROPIC_API_KEY
-python -m assistant                      # chat in the terminal
-pytest                                   # tests use a fake client, no API key needed
+python -m assistant          # chat in the terminal
+pytest                       # tests use fake clients: no API key, no Google account
 ```
 
 Code map: `assistant/agent.py` (the loop), `assistant/tools.py` (tool
-schemas, allowlist, confirmation gate), `assistant/store.py` (SQLite).
+schemas, allowlist, confirmation gate), `assistant/store.py` (SQLite),
+`assistant/google_calendar.py` (Google Calendar).
+
+A pre-commit hook runs gitleaks with `.gitleaks.toml` to block committed
+secrets (Anthropic keys, Google client secrets):
+
+```bash
+printf '#!/bin/sh\nexec gitleaks protect --staged --redact -c .gitleaks.toml\n' \
+  > .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+```
 
 ## Status
 
-- [ ] Agent loop, to-do and training tools (local)
-- [ ] Gmail and Calendar, read-only, morning brief
+- [x] Agent loop, to-do and training tools (local)
+- [x] Google Calendar: read, and edit with confirmation
+- [ ] Gmail read-only, morning brief
 - [ ] Evaluation on synthetic emails
-- [ ] Drafts and events with confirmation
+- [ ] Email drafts with confirmation

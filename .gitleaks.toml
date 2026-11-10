@@ -9,3 +9,9 @@ id = "anthropic-api-key"
 description = "Anthropic API key"
 regex = '''sk-ant-[a-z0-9]+-[A-Za-z0-9_\-]{20,}'''
 keywords = ["sk-ant-"]
+
+[[rules]]
+id = "google-oauth-client-secret"
+description = "Google OAuth client secret"
+regex = '''GOCSPX-[A-Za-z0-9_\-]{20,}'''
+keywords = ["GOCSPX-"]

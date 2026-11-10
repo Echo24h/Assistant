@@ -29,8 +29,13 @@ Décisions prises le 10.11.2026. Document interne (en français, pour moi).
 - **Python, pas n8n** : n8n montre qu'on sait utiliser un outil ; du code
   montre la boucle, les outils, les erreurs, l'évaluation. Et un agent qui
   décide selon la situation se code mieux qu'il ne se dessine en cases.
-- **MCP** (Model Context Protocol) pour Gmail et Google Calendar : ne pas
-  recoder OAuth et les API Google, utiliser des serveurs MCP existants.
+- **Google Calendar : API Google appelée directement** en Python
+  (`google-api-python-client`), décision du 10.11.2026 à la place de MCP :
+  je choisis et vérifie le scope moi-même (beaucoup de serveurs MCP
+  communautaires demandent l'accès complet), et le code reste court et
+  explicable. Google propose aussi un serveur MCP officiel (Calendar MCP
+  API) : option pour plus tard, pour montrer MCP en entretien.
+- Gmail : même approche probable (à décider au moment de l'ajouter).
 - **Mes propres outils** pour la todo list et l'entraînement : fonctions
   Python (ou petit serveur MCP), stockage SQLite local.
 
@@ -83,7 +88,14 @@ Décision du 10.11.2026 : **très petit budget** (5 $ de crédits).
 - Plafond de dépenses dans la console Anthropic.
 
 ### 2. Permissions Google minimales
-- Début : `gmail.readonly`, `calendar.readonly`.
+- Agenda : `calendar.events` (lire **et modifier** les événements),
+  décision du 10.11.2026 pour un usage quotidien. **Pas `calendar`** :
+  il permet aussi de partager l'agenda (fuite possible).
+  - **Jamais d'invités** et toujours `sendUpdates="none"` : ajouter un
+    invité envoie un mail, donc un canal de sortie (trifecta).
+  - Création, modification, suppression : confirmation imposée dans le
+    code. Lecture : libre.
+- Gmail : `gmail.readonly`.
 - Plus tard : `gmail.compose` (brouillons). **Jamais `gmail.send`.**
 - Projet Google Cloud en mode « test », moi seul comme utilisateur.
 
@@ -124,7 +136,8 @@ Règle : **ne jamais donner le troisième** à l'agent qui lit mes mails.
 - **Jour 1** (local, sans Google) : boucle de l'agent avec l'API (Haiku),
   outils todo et entraînement sur SQLite, interface en ligne de commande.
   Déjà utile, aucun risque.
-- **Jour 2** : Gmail et Calendar en lecture seule (MCP), « brief du
+- **Jour 2** : Calendar (lecture + écriture confirmée), Gmail en lecture
+  seule, « brief du
   matin » (agenda du jour, mails importants, tâches).
 - **Jour 3** : faux mails, évaluation chiffrée, README avec résultats.
 - **Plus tard** : brouillons de réponse et création d'événements avec
@@ -137,7 +150,7 @@ Règle : **ne jamais donner le troisième** à l'agent qui lit mes mails.
 - [ ] Copier `.env.example` en `.env`, y mettre la clé.
 - [ ] `python3 -m venv .venv && . .venv/bin/activate`
 - [ ] (Jour 2) Créer un projet Google Cloud en mode test, activer les API
-      Gmail et Calendar, scopes en lecture seule.
+      Gmail et Calendar, scopes `calendar.events` et `gmail.readonly`.
 - [ ] Dépôt GitHub public : seulement quand gitleaks est en place.
 - [ ] En parallèle, pour la vie quotidienne : autoriser les connecteurs
       Gmail et Google Calendar dans claude.ai.

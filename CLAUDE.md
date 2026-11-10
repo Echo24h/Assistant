@@ -9,7 +9,11 @@ Contexte et décisions : lire `docs/PLAN.md` avant toute modification.
   (LangChain, etc.) sans qu'il le demande.
 - Sécurité non négociable :
   - jamais d'outil qui envoie un mail ou des données vers l'extérieur ;
-  - scopes Google en lecture seule (puis `gmail.compose` au plus) ;
+  - scopes Google minimaux : `calendar.events` (jamais `calendar`, qui
+    permet de partager l'agenda), Gmail en lecture seule (puis
+    `gmail.compose` au plus) ;
+  - événements : jamais d'invités, toujours `sendUpdates="none"`
+    (un invité reçoit un mail = canal de sortie) ;
   - confirmation des actions sensibles **dans le code** ;
   - aucun secret ni donnée personnelle dans le dépôt (`.env`, données
     dans `~/.local/share/assistant/`) ; faux mails seulement dans `evals/`.
