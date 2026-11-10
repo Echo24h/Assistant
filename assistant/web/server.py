@@ -30,6 +30,7 @@ from urllib.parse import parse_qs, urlsplit
 import anthropic
 
 from ..app import api_error_message, build_agent, open_database
+from ..pricing import cost_usd
 from ..services.products import language_code
 from ..services.users import User
 from .api import SharedDB
@@ -66,8 +67,9 @@ TURN_TIMEOUT = 600  # seconds max for one agent turn
 class Session:
     """One user's conversation with the agent, run in a background thread."""
 
-    def __init__(self, make_agent):
+    def __init__(self, make_agent, model: str = ""):
         self.agent = make_agent(self.confirm)
+        self.model = model  # for the price shown in the page
         self.outbox = queue.Queue()  # events for the browser: question / reply / error
         self.answers = queue.Queue()  # the user's yes/no for a pending question
         self.busy = False
@@ -86,7 +88,7 @@ class Session:
             self.waiting_answer = False
 
     def _run(self, text: str) -> None:
-        before_in, before_out = self.agent.input_tokens, self.agent.output_tokens
+        before = self.usage()
         try:
             event = {"type": "reply", "text": self.agent.ask(text)}
         except anthropic.APIError as e:
@@ -94,12 +96,22 @@ class Session:
         except Exception as e:  # never leave the browser waiting forever
             event = {"type": "error", "text": f"Unexpected error: {e}"}
         # This message alone, and the whole conversation so far.
-        event["tokens"] = {"in": self.agent.input_tokens - before_in,
-                           "out": self.agent.output_tokens - before_out,
-                           "total_in": self.agent.input_tokens,
-                           "total_out": self.agent.output_tokens}
+        total = self.usage()
+        message = {k: total[k] - before[k] for k in total}
+        event["tokens"] = {"message": message, "total": total,
+                           "message_usd": self.cost(message), "total_usd": self.cost(total)}
         self.busy = False
         self.outbox.put(event)
+
+    def usage(self) -> dict:
+        """The agent's token counters so far (this conversation)."""
+        a = self.agent
+        return {"in": a.input_tokens, "out": a.output_tokens,
+                "cache_read": a.cache_read_tokens, "cache_write": a.cache_write_tokens}
+
+    def cost(self, usage: dict) -> float | None:
+        return cost_usd(self.model, usage["in"], usage["out"],
+                        usage["cache_read"], usage["cache_write"])
 
     # --- called from the web server's threads ---
 
@@ -171,7 +183,8 @@ class App:
                 if user.login in self.sessions:
                     self.sessions[user.login].close()
                 self.sessions[user.login] = Session(
-                    lambda confirm: build_agent(self.cfg, confirm, user, calendar, gmail))
+                    lambda confirm: build_agent(self.cfg, confirm, user, calendar, gmail),
+                    self.cfg.model)
             return self.sessions[user.login]
 
 

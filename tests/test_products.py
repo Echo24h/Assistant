@@ -113,3 +113,35 @@ def test_database_v8_is_migrated_and_synced_without_loss(tmp_path):
 
     open_household(db, {"me@x.com": "Grégory"})  # a second start changes nothing
     assert len(user_data(conn, owner).products.names()) == len(catalog().products)
+
+
+def test_unknown_products_are_refused_before_asking(data):
+    """Seen in real use: "poulet blanc" was refused AFTER the user said yes,
+    so the model asked a second time with fixed names."""
+    from assistant.agent.tools import ToolBox, ToolError
+    asked = []
+    box = ToolBox(data, confirm=lambda q: asked.append(q) or True)
+    recipe = {"title": "Curry", "servings": 4, "instructions": "",
+              "ingredients": [{"name": "poulet", "quantity": 500, "unit": "g"},
+                              {"name": "zaatar", "quantity": 1, "unit": "tsp"}]}
+    with pytest.raises(ToolError, match="zaatar"):
+        box.run("save_recipe", recipe)
+    assert asked == []  # the user was not asked for a save that cannot work
+
+
+def test_suggestions_prefer_the_product_named_inside():
+    """Seen in real use: "gousse de vanille" suggested Ail (alias "gousse d'ail")."""
+    assert catalog().closest("gousse de vanille bourbon", "fr")[0] == "Vanille"
+    assert catalog().find("jaunes d'œufs").key == "egg"
+    assert catalog().find("crème liquide").key != catalog().find("crème fraîche").key
+
+
+def test_tap_water_is_never_on_the_shopping_list(data):
+    recipe = data.recipes.add("Pâte à choux", 4, [
+        {"name": "eau", "quantity": 125, "unit": "ml"},
+        {"name": "farine", "quantity": 150, "unit": "g"}])
+    data.shopping.add_recipe(recipe["id"])
+    assert [i["name"] for i in data.shopping.list()] == ["Farine"]
+    with pytest.raises(ValueError, match="never bought"):
+        data.shopping.add("eau du robinet")
+    data.shopping.add("eau minérale", 6)  # bottled water: bought

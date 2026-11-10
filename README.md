@@ -18,6 +18,12 @@ evaluation.
 - **Model routing on a small budget**: the small model (Haiku) by default,
   with low effort; the larger one (Sonnet) only where the evaluation shows
   the small one is not good enough.
+- **Prompt caching**: every request starts with the same ~5,900 tokens
+  (tools, system prompt) plus the conversation so far. One cache marker on
+  the system prompt and automatic caching of the conversation: from the
+  second request on, they are read from the cache at ~10% of the price
+  (measured: $0.00007 instead of $0.0006 for a short message). The page
+  shows the cost of each message in dollars.
 
 ## Safety
 

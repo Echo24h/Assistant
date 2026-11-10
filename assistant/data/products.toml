@@ -6,6 +6,7 @@
 # aisle          one of: fruits et légumes, boulangerie, viande et poisson, frais,
 #                épicerie, surgelés, boissons, maison, autre
 # aliases        other ways to write it (recipes from websites, plurals...)
+# shop = false   used in recipes but never bought (tap water): not put on the list
 #
 # To remove a product: delete it here. If a recipe still uses it, it stays,
 # shown as retired (python -m assistant products), until the recipe changes.
@@ -172,6 +173,7 @@ aisle = "fruits et légumes"
 fr = "Gingembre"
 en = "Ginger"
 aisle = "fruits et légumes"
+aliases = ["gingembre frais"]
 
 [lemon]
 fr = "Citron"
@@ -689,7 +691,7 @@ aliases = ["boeuf", "steak"]
 fr = "Poulet"
 en = "Chicken"
 aisle = "viande et poisson"
-aliases = ["blanc de poulet", "escalope de poulet", "filet de poulet"]
+aliases = ["blanc de poulet", "escalope de poulet", "filet de poulet", "poulet blanc", "cuisse de poulet désossée"]
 
 [pork]
 fr = "Porc"
@@ -959,15 +961,24 @@ aisle = "frais"
 
 [cream]
 fr = "Crème fraîche"
-en = "Cream"
+en = "Crème fraîche"
 aisle = "frais"
-aliases = ["crème", "crème liquide", "crème entière"]
+aliases = ["crème fraîche épaisse", "crème épaisse"]
+
+# Not the same thing in a recipe: liquid cream whips and makes sauces.
+[liquid_cream]
+fr = "Crème liquide"
+en = "Liquid cream"
+aisle = "frais"
+aliases = ["crème liquide entière", "crème entière", "crème fleurette", "crème à fouetter"]
 
 [egg]
 fr = "Œuf"
 en = "Egg"
 aisle = "frais"
-aliases = ["oeuf"]
+# A yolk or a white is one egg to buy.
+aliases = ["oeuf", "jaune d'œuf", "jaunes d'œufs", "jaune d'oeuf", "jaunes d'oeufs",
+           "blanc d'œuf", "blancs d'œufs", "blanc d'oeuf", "blancs d'oeufs", "egg yolk", "egg white"]
 
 [yogurt]
 fr = "Yaourt"
@@ -1449,7 +1460,7 @@ aliases = ["piment d'espelette"]
 fr = "Vanille"
 en = "Vanilla"
 aisle = "épicerie"
-aliases = ["sucre vanillé", "extrait de vanille"]
+aliases = ["sucre vanillé", "extrait de vanille", "gousse de vanille", "gousses de vanille"]
 
 [stock_cube]
 fr = "Bouillon"
@@ -2047,10 +2058,10 @@ aisle = "surgelés"
 # --- boissons ---
 
 [water]
-fr = "Eau"
-en = "Water"
+fr = "Eau minérale"
+en = "Bottled water"
 aisle = "boissons"
-aliases = ["eau minérale", "eau gazeuse"]
+aliases = ["eau gazeuse", "eau plate", "bouteille d'eau", "bouteilles d'eau"]
 
 [orange_juice]
 fr = "Jus d'orange"
@@ -2423,6 +2434,14 @@ en = "Wet wipes"
 aisle = "maison"
 
 # --- autre ---
+
+# Used in recipes, never bought: "shop = false" keeps it off the shopping list.
+[tap_water]
+fr = "Eau"
+en = "Tap water"
+aisle = "autre"
+aliases = ["eau du robinet", "eau froide", "eau chaude", "eau tiède"]
+shop = false
 
 [flowers]
 fr = "Fleurs"

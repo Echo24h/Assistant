@@ -21,7 +21,10 @@ DEFINITIONS = [
     {
         "name": "save_recipe",
         "description": "Save a recipe (dictated by the user, or one you suggested and "
-                       "the user wants to keep). The user is asked to confirm.",
+                       "the user wants to keep). Copy it faithfully: the same product "
+                       "may appear several times (eggs for the dough, yolks for the "
+                       "cream): never merge lines, never change quantities or steps. "
+                       "The user is asked to confirm.",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -54,7 +57,8 @@ DEFINITIONS = [
         "name": "update_recipe",
         "description": "Change a saved recipe. null = keep as it is. Use get_recipe "
                        "first: new ingredients REPLACE all the old ones, so give the "
-                       "full list. The user is asked to confirm.",
+                       "full list. Change only what the user asked. The user is asked "
+                       "to confirm.",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -106,14 +110,26 @@ def delete_recipe(data, recipe_id: int) -> dict:
 
 
 def check(data, name: str, args: dict) -> None:
-    """Nothing to check before confirmation."""
+    """Refuse unknown products BEFORE asking the user: otherwise they say yes,
+    the save fails, the model fixes the names and asks a second time."""
+    if name in ("save_recipe", "update_recipe") and args.get("ingredients"):
+        data.products.check_known([i["name"] for i in args["ingredients"]])
+
+
+def amounts(ingredients: list[dict]) -> str:
+    """"Œuf 4, Lait 500 ml, Sel": every line with its quantity, so that the
+    user can see a wrong quantity BEFORE saying yes (it happened: 12 eggs)."""
+    def one(i):
+        quantity = "" if i["quantity"] is None else f" {i['quantity']:g}"
+        unit = f" {i['unit']}" if i["unit"] and i["quantity"] is not None else ""
+        return f"{i['name']}{quantity}{unit}"
+    return ", ".join(one(i) for i in ingredients)
 
 
 def describe(data, name: str, args: dict) -> str:
     if name == "save_recipe":
-        names = ", ".join(i["name"] for i in args["ingredients"][:6])
-        more = "…" if len(args["ingredients"]) > 6 else ""
-        return f"Save the recipe «{args['title']}» ({args['servings']} people: {names}{more})?"
+        return (f"Save the recipe «{args['title']}» for {args['servings']} people: "
+                f"{amounts(args['ingredients'])}?")
     recipe = data.recipes.get(args["recipe_id"])
     label = recipe["title"] if recipe else f"#{args['recipe_id']} (not found)"
     if name == "update_recipe":
@@ -123,9 +139,7 @@ def describe(data, name: str, args: dict) -> str:
         if args["servings"] is not None:
             changes.append(f"{args['servings']} people")
         if args["ingredients"] is not None:
-            names = ", ".join(i["name"] for i in args["ingredients"][:6])
-            more = "…" if len(args["ingredients"]) > 6 else ""
-            changes.append(f"ingredients → {names}{more}")
+            changes.append(f"ingredients → {amounts(args['ingredients'])}")
         if args["instructions"] is not None:
             changes.append("new steps")
         return f"Change the recipe «{label}»: {'; '.join(changes) or 'nothing'}?"

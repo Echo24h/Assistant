@@ -247,6 +247,13 @@ expense_shares(expense_id → expenses CASCADE, user_id → users, amount_cents)
   fusionner les noms (la correspondance sert seulement à retrouver un
   produit, elle ne modifie jamais les données).
 
+### Cache des prompts (11.11.2026)
+- Repère `cache_control` sur le prompt système (outils + prompt, ~5 900
+  tokens, identiques à chaque requête) + cache automatique de la
+  conversation. Ce qui change (nom, langue, date) est placé après le repère.
+- Mesuré : 2e message 0,00007 $ au lieu de 0,0006 $ (≈ 8× moins cher) ; le
+  1er coûte un peu plus (écriture ×1,25). Coût en $ affiché sous chaque message.
+
 ### Migration vers un serveur
 - Code par `git clone`, `.env` par `scp`, données par `rsync`
   (`~/.local/share/assistant/`) ; service `deploy/assistant-web.service`.

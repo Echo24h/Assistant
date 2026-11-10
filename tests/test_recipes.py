@@ -81,7 +81,8 @@ def test_agent_tools_for_recipes_and_shopping(data):
     box = ToolBox(data, confirm=lambda q: asked.append(q) or True)
     box.run("save_recipe", {"title": "Pâtes tomate", "servings": 2,
                             "ingredients": PASTA, "instructions": "1. Cuire."})
-    assert asked == ["Save the recipe «Pâtes tomate» (2 people: Pâtes, Tomate, Sel)?"]
+    assert asked == ["Save the recipe «Pâtes tomate» for 2 people: "
+                     "Pâtes 0.5 kg, Tomate 4, Sel?"]  # quantities visible before yes
 
     recipe_id = data.recipes.list()[0]["id"]
     box.run("add_recipe_to_shopping_list", {"recipe_id": recipe_id, "servings": None})

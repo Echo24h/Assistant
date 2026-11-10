@@ -21,7 +21,7 @@ SYSTEM_PROMPT = """You are a personal assistant. You manage the household's \
 to-do list, recipes, shopping list and shared expenses, and (when connected) the user's Google Calendar and Gmail \
 (read-only) with the tools provided.
 
-- Be brief.
+- Be brief. In French, say "tu" to the user, never "vous".
 - Calendar or to-do list? Something that HAPPENS at a moment (meeting, \
 appointment, dinner, party, evening, trip) goes in the calendar. Something \
 to DO (buy, call, send, pay, finish) goes in the to-do list, with a due date \
@@ -64,12 +64,21 @@ class Agent:
         self.effort = effort
         self.log_path = log_path
         self.messages: list[dict] = []  # the whole conversation, kept across turns
-        self.input_tokens = 0
+        self.input_tokens = 0  # input not read from the cache (full price)
         self.output_tokens = 0
+        self.cache_read_tokens = 0  # input read from the cache (~10% of the price)
+        self.cache_write_tokens = 0  # input written to the cache (~125%, then cheap)
 
     def close(self) -> None:
         """Release what the tools hold (the database connection)."""
         self.toolbox.close()
+
+    def count(self, usage) -> None:
+        """Add up the tokens of one request (the cache fields may be absent)."""
+        self.input_tokens += usage.input_tokens
+        self.output_tokens += usage.output_tokens
+        self.cache_read_tokens += getattr(usage, "cache_read_input_tokens", 0) or 0
+        self.cache_write_tokens += getattr(usage, "cache_creation_input_tokens", 0) or 0
 
     def ask(self, user_text: str) -> str:
         """Handle one user message; return the assistant's final text."""
@@ -77,18 +86,30 @@ class Agent:
         self.messages.append({"role": "user", "content": user_text})
 
         for _ in range(MAX_STEPS):
+            # Prompt caching: every request starts with the same ~5,000 tokens
+            # (tools, then system prompt) and the conversation so far. The API
+            # keeps them for 5 minutes; reading them again costs ~10%.
+            # - the marker on the system prompt caches tools + system prompt;
+            # - the top-level cache_control caches the conversation, up to the
+            #   last message, and moves forward by itself.
+            # What changes per person or per day (name, language, date) comes
+            # AFTER the marker, so the big part is the same for everyone.
             response = self.client.messages.create(
                 model=self.model,
                 max_tokens=16000,
-                system=(f"{SYSTEM_PROMPT}\n\nThe user is {self.user_name}. "
-                        f"Always answer in {self.language}.\n"
-                        f"Today is {date.today():%A %Y-%m-%d}."),
+                system=[
+                    {"type": "text", "text": SYSTEM_PROMPT,
+                     "cache_control": {"type": "ephemeral"}},
+                    {"type": "text", "text": f"The user is {self.user_name}. "
+                                             f"Always answer in {self.language}.\n"
+                                             f"Today is {date.today():%A %Y-%m-%d}."},
+                ],
                 tools=self.toolbox.definitions,
                 output_config={"effort": self.effort},
                 messages=self.messages,
+                cache_control={"type": "ephemeral"},
             )
-            self.input_tokens += response.usage.input_tokens
-            self.output_tokens += response.usage.output_tokens
+            self.count(response.usage)
 
             # Keep the full content (text, thinking, tool_use blocks) unchanged:
             # the API needs it as-is on the next request.

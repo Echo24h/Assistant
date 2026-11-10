@@ -26,11 +26,16 @@ class Shopping:
 
     def add(self, name: str, quantity: float | None = None, unit: str | None = None,
             recipe_id: int | None = None) -> dict:
+        product = self.products.catalog.find(name)
+        if product is not None and not product.shop:
+            raise ValueError(f'"{product.name(self.products.language)}" is never bought '
+                             "(shop = false in products.toml).")
         with self.conn:
             return self._add(clean_ingredient(name, quantity, unit), recipe_id)
 
     def add_recipe(self, recipe_id: int, servings: int | None = None) -> list[dict]:
-        """Put a recipe's ingredients on the list, scaled to `servings` people."""
+        """Put a recipe's ingredients on the list, scaled to `servings` people.
+        Products that are never bought (tap water) are left out."""
         recipe = self.recipes.get(recipe_id)
         if recipe is None:
             raise ValueError(f"No recipe with id {recipe_id}.")
@@ -41,8 +46,12 @@ class Shopping:
         with self.conn:  # all the ingredients, or none
             return [
                 self._add({**i, "quantity": scale(i["quantity"], factor)}, recipe_id)
-                for i in recipe["ingredients"]
+                for i in recipe["ingredients"] if self._bought(i["name"])
             ]
+
+    def _bought(self, name: str) -> bool:
+        product = self.products.catalog.find(name)
+        return product is None or product.shop
 
     def list(self, include_checked: bool = False) -> list[dict]:
         """Not in the cart first, then in the order of the shop's aisles."""

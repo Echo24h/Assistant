@@ -9,6 +9,7 @@ import anthropic
 from .agent import Agent
 from .app import api_error_message, build_agent, connect_google, open_database
 from .config import load_config
+from .pricing import cost_usd
 from .services.bugs import image_type
 from .services.household import user_data
 from .services.products import CATALOG_FILE
@@ -117,7 +118,11 @@ def main() -> None:
         ask_and_print(agent, BRIEF_PROMPT)
     else:
         chat(agent, cfg.model)
-    print(f"\nTokens used: {agent.input_tokens} in, {agent.output_tokens} out")
+    cost = cost_usd(cfg.model, agent.input_tokens, agent.output_tokens,
+                    agent.cache_read_tokens, agent.cache_write_tokens)
+    print(f"\nTokens: {agent.input_tokens} in (+{agent.cache_read_tokens} read from cache, "
+          f"{agent.cache_write_tokens} written to cache), {agent.output_tokens} out"
+          + (f" · ${cost:.4f}" if cost is not None else ""))
 
 
 def chat(agent: Agent, model: str) -> None:

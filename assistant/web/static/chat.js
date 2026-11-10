@@ -22,6 +22,16 @@ document.addEventListener("DOMContentLoaded", () => {
     log.appendChild(el("div", "meta", text));
   }
 
+  // "ce message : 0,0006 $ (5 200 tokens, dont 4 900 en cache) · conversation : 0,0021 $"
+  function usageText(t) {
+    const tokens = u => u.in + u.cache_read + u.cache_write;
+    const usd = x => x === null ? "" : `${x.toFixed(4).replace(".", ",")} $ `;
+    const n = x => x.toLocaleString("fr-FR");
+    return `ce message : ${usd(t.message_usd)}(${n(tokens(t.message))} tokens, ` +
+           `dont ${n(t.message.cache_read)} en cache, ${n(t.message.out)} en sortie) · ` +
+           `conversation : ${usd(t.total_usd)}(${n(tokens(t.total))} tokens)`;
+  }
+
   function setBusy(busy) {
     send.disabled = busy;
     send.textContent = busy ? "…" : "Envoyer";
@@ -44,11 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return; // still busy until the agent's final reply
     }
     addMessage(event.type === "error" ? "error" : "bot", event.text || "");
-    if (event.tokens) {
-      const t = event.tokens;
-      addMeta(`ce message : ${t.in} entrée, ${t.out} sortie · ` +
-              `conversation : ${t.total_in} entrée, ${t.total_out} sortie`);
-    }
+    if (event.tokens) addMeta(usageText(event.tokens));
     setBusy(false);
   }
 

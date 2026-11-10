@@ -21,6 +21,7 @@ class FakeAgent:
     def __init__(self, confirm):
         self.confirm = confirm
         self.input_tokens = self.output_tokens = 0
+        self.cache_read_tokens = self.cache_write_tokens = 0
         self.closed = False
 
     def close(self):
@@ -57,7 +58,8 @@ def server(monkeypatch):
                         lambda cfg, confirm, user, cal, gm: FakeAgent(confirm))
     users = {"me@gmail.com": "Grégory"}
     cfg = NS(web_users=users, people=users, web_dev_user=None, db_path=":memory:",
-             currency="CHF", language="French")
+             currency="CHF", language="French",
+             model="claude-haiku-5-5")
     httpd = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(App(cfg, None, None)))
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     yield f"http://127.0.0.1:{httpd.server_port}"
@@ -79,9 +81,9 @@ ME = {"Tailscale-User-Login": "me@gmail.com"}
 
 def test_allowed_user_can_chat(server):
     assert call(server, "/api/ask", headers=ME) == (200, {"type": "reply", "text": "echo: hi",
-                                                          "tokens": {"in": 0, "out": 0,
-                                                                     "total_in": 0,
-                                                                     "total_out": 0}})
+                                                          "tokens": {
+        "message": {"in": 0, "out": 0, "cache_read": 0, "cache_write": 0}, "total": {"in": 0, "out": 0, "cache_read": 0, "cache_write": 0},
+        "message_usd": 0.0, "total_usd": 0.0}})
 
 
 def test_unknown_or_missing_login_is_refused(server):
@@ -160,7 +162,8 @@ def test_only_the_owner_gets_google(monkeypatch):
                         given.update({user.name: (cal, gm)}) or FakeAgent(confirm))
     users = {"me@gmail.com": "Grégory", "her@gmail.com": "Anna"}
     cfg = NS(web_users=users, people=users, web_dev_user=None, db_path=":memory:",
-             currency="CHF", language="French")
+             currency="CHF", language="French",
+             model="claude-haiku-5-5")
     app = App(cfg, calendar="my calendar", gmail="my gmail")
 
     for login in users:

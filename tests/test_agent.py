@@ -2,6 +2,8 @@
 
 from types import SimpleNamespace as NS
 
+import pytest
+
 from assistant.agent import Agent
 from helpers import memory_data
 from assistant.agent.tools import ToolBox
@@ -82,3 +84,24 @@ def test_refusal_rolls_back_the_turn(tmp_path):
 
     assert "declined" in agent.ask("something")
     assert agent.messages == []
+
+
+def test_prompt_caching_markers(tmp_path):
+    """Tools + system prompt are cached with one marker; the conversation with
+    the top-level cache_control. What changes per person/day comes after."""
+    client = FakeClient([reply("end_turn", text("Hi."))])
+    agent, _ = make_agent(client, tmp_path)
+    agent.ask("hello")
+    request = client.requests[0]
+    assert request["cache_control"] == {"type": "ephemeral"}
+    stable, changing = request["system"]
+    assert stable["cache_control"] == {"type": "ephemeral"}
+    assert "Today is" not in stable["text"] and "Today is" in changing["text"]
+
+
+def test_cost_in_dollars():
+    from assistant.pricing import cost_usd
+    # 1M tokens read from the cache cost 10% of 1M normal input tokens.
+    assert cost_usd("claude-haiku-5-5", 0, 0, cache_read=1_000_000) == pytest.approx(0.01)
+    assert cost_usd("claude-haiku-5-5", 1_000_000, 1_000_000) == pytest.approx(0.60)
+    assert cost_usd("unknown-model", 10, 10) is None

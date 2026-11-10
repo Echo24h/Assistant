@@ -68,6 +68,7 @@ class Product:
     names: dict[str, str]  # language code -> name
     aisle: str
     aliases: tuple[str, ...] = field(default=())
+    shop: bool = True  # False: used in recipes, never bought (tap water)
 
     def name(self, language: str) -> str:
         return self.names.get(language) or self.names.get("en") or self.key
@@ -92,15 +93,23 @@ class Catalog:
 
     def closest(self, written: str, language: str, n: int = 3) -> list[str]:
         """Names of the products that look the most like `written` (for an error).
-        Compared with the names in this language and the aliases only: not with
-        the English keys or the other languages ("tomat" is not "oats")."""
+
+        First the products whose name is a whole word of it ("gousse de
+        vanille" -> Vanille), then names that are spelled alike ("tomat" ->
+        Tomate). Compared with the names in this language and the aliases
+        only: not with the English keys or other languages ("tomat" is not "oats").
+        """
+        text = normalize(written)
+        inside = [p.name(language) for p in self.products.values()
+                  if re.search(rf"\b{re.escape(normalize(p.name(language)))}\b", text)]
+        inside.sort(key=len, reverse=True)  # "huile d'olive" before "huile"
         candidates = {}  # normalized -> product key
         for product in self.products.values():
             for written_form in [product.name(language), *product.aliases]:
                 candidates.setdefault(normalize(written_form), product.key)
-        found = difflib.get_close_matches(normalize(written), candidates, n=n * 2, cutoff=0.75)
-        names = dict.fromkeys(self.products[candidates[f]].name(language) for f in found)
-        return list(names)[:n]
+        found = difflib.get_close_matches(text, candidates, n=n * 2, cutoff=0.75)
+        alike = [self.products[candidates[f]].name(language) for f in found]
+        return list(dict.fromkeys(inside + alike))[:n]
 
 
 def read_catalog(path: Path = CATALOG_FILE) -> Catalog:
@@ -110,12 +119,16 @@ def read_catalog(path: Path = CATALOG_FILE) -> Catalog:
     for key, entry in data.items():
         if not re.fullmatch(r"[a-z0-9_]+", key):
             raise ValueError(f"products.toml: key «{key}»: a-z, 0-9 and _ only")
-        names = {lang: name for lang, name in entry.items() if lang not in ("aisle", "aliases")}
+        names = {lang: name for lang, name in entry.items()
+                 if lang not in ("aisle", "aliases", "shop")}
         if not names or not all(isinstance(n, str) and n.strip() for n in names.values()):
             raise ValueError(f"products.toml: [{key}] needs names, e.g. fr = \"...\"")
         if entry.get("aisle") not in AISLES:
             raise ValueError(f"products.toml: [{key}] aisle must be one of {AISLES}")
-        products.append(Product(key, names, entry["aisle"], tuple(entry.get("aliases", ()))))
+        if not isinstance(entry.get("shop", True), bool):
+            raise ValueError(f"products.toml: [{key}] shop must be true or false")
+        products.append(Product(key, names, entry["aisle"], tuple(entry.get("aliases", ())),
+                                entry.get("shop", True)))
     return Catalog(products)
 
 
