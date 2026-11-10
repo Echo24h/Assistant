@@ -59,6 +59,11 @@ class Store:
         self.conn.commit()
         return cur.rowcount == 1
 
+    def reopen_task(self, task_id: int) -> bool:
+        cur = self.conn.execute("UPDATE tasks SET done = 0 WHERE id = ?", (task_id,))
+        self.conn.commit()
+        return cur.rowcount == 1
+
     def delete_task(self, task_id: int) -> bool:
         cur = self.conn.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
         self.conn.commit()

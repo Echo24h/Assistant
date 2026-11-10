@@ -90,7 +90,11 @@ sudo tailscale serve --bg 8765   # HTTPS, visible only to my own devices
   `ASSISTANT_WEB_USERS` (header `Tailscale-User-Login`).
 - CSRF: JSON bodies only, and the `Origin` header is checked.
 - Confirmations appear as ✅ / ❌ buttons; replies are inserted as text,
-  never HTML, so email content cannot inject code into the page.
+  never HTML, and the Content-Security-Policy forbids inline scripts, so
+  email content cannot inject code into the page.
+- Two tabs: **Chat** (the agent, costs tokens) and **Tasks** (the to-do
+  list read and changed directly in the database: no model, 0 tokens).
+  Confirmations guard the model's decisions; a click is the user's own.
 - To run it on a server: `deploy/assistant-web.service`.
 
 ## Run it

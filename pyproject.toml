@@ -25,4 +25,4 @@ packages = ["assistant", "assistant.agent", "assistant.agent.tools",
             "assistant.services", "assistant.web"]
 
 [tool.setuptools.package-data]
-"assistant.web" = ["static/*.html"]
+"assistant.web" = ["static/*.html", "static/*.css", "static/*.js"]

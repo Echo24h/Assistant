@@ -9,7 +9,8 @@ Security model (see docs/PLAN.md):
 - against CSRF (another website making my browser post here): only JSON
   bodies are accepted (forces a CORS preflight, which we never allow) and
   the Origin header, when present, must be this site.
-- replies are inserted as text in the page, never as HTML (index.html).
+- replies are inserted as text in the page, never as HTML (static/), and
+  the Content-Security-Policy forbids any inline script.
 
 How a confirmation works: the agent runs in a background thread. When a
 tool needs confirmation, the thread puts the question in an "outbox"
@@ -24,12 +25,26 @@ import threading
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import parse_qs, urlsplit
 
 import anthropic
 
 from ..app import api_error_message, build_agent
+from ..services.store import Store
+from .api import BadRequest, TasksAPI
 
-PAGE = Path(__file__).parent / "static" / "index.html"
+STATIC_DIR = Path(__file__).parent / "static"
+# The only files the server will ever send: URL path -> (file, content type).
+STATIC = {
+    "/": ("index.html", "text/html; charset=utf-8"),
+    "/style.css": ("style.css", "text/css; charset=utf-8"),
+    "/app.js": ("app.js", "text/javascript; charset=utf-8"),
+    "/chat.js": ("chat.js", "text/javascript; charset=utf-8"),
+    "/tasks.js": ("tasks.js", "text/javascript; charset=utf-8"),
+}
+# No inline script or style is allowed: even injected HTML could not run code.
+CSP = ("default-src 'self'; frame-ancestors 'none'; base-uri 'none'; "
+       "form-action 'self'; object-src 'none'")
 MAX_BODY = 10_000  # bytes: a chat message, not a file upload
 ANSWER_TIMEOUT = 300  # seconds to answer a confirmation, then it counts as "no"
 TURN_TIMEOUT = 600  # seconds max for one agent turn
@@ -99,6 +114,7 @@ class App:
         self.gmail = gmail
         self.sessions: dict[str, Session] = {}
         self.lock = threading.Lock()
+        self.tasks = TasksAPI(Store(cfg.db_path))  # direct features, no model
 
     def user(self, headers) -> str | None:
         """The allowed user's login for this request, or None."""
@@ -118,17 +134,23 @@ class App:
 def make_handler(app: App):
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
-            if self.path != "/":
-                return self.send_json({"error": "not found"}, HTTPStatus.NOT_FOUND)
             if not app.user(self.headers):
                 return self.send_json({"error": "forbidden"}, HTTPStatus.FORBIDDEN)
-            body = PAGE.read_bytes()
+            url = urlsplit(self.path)
+            if url.path in STATIC:
+                return self.send_static(*STATIC[url.path])
+            query = {k: v[0] for k, v in parse_qs(url.query).items()}
+            result = app.tasks.get(url.path, query)
+            if result is None:
+                return self.send_json({"error": "not found"}, HTTPStatus.NOT_FOUND)
+            self.send_json(result)
+
+        def send_static(self, name: str, content_type: str) -> None:
+            body = (STATIC_DIR / name).read_bytes()
             self.send_response(HTTPStatus.OK)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Type", content_type)
             self.send_header("Content-Length", str(len(body)))
-            self.send_header("Content-Security-Policy",
-                             "default-src 'self'; script-src 'unsafe-inline'; "
-                             "style-src 'unsafe-inline'")
+            self.send_header("Cache-Control", "no-cache")  # always the latest version
             self.end_headers()
             self.wfile.write(body)
 
@@ -150,8 +172,13 @@ def make_handler(app: App):
             elif self.path == "/api/reset":
                 app.session(login, new=True)
                 event = {"type": "reset", "name": app.cfg.web_users.get(login, login)}
-            else:
-                return self.send_json({"error": "not found"}, HTTPStatus.NOT_FOUND)
+            else:  # direct features (web/api.py)
+                try:
+                    event = app.tasks.post(self.path, data)
+                except BadRequest as e:
+                    return self.send_json({"error": str(e)}, HTTPStatus.BAD_REQUEST)
+                if event is None:
+                    return self.send_json({"error": "not found"}, HTTPStatus.NOT_FOUND)
             self.send_json(event)
 
         def same_origin(self) -> bool:
@@ -179,8 +206,16 @@ def make_handler(app: App):
             self.send_response(status)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")  # personal data
             self.end_headers()
             self.wfile.write(body)
+
+        def end_headers(self):
+            """Security headers on every response."""
+            self.send_header("Content-Security-Policy", CSP)
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("Referrer-Policy", "no-referrer")
+            super().end_headers()
 
         def log_message(self, format, *args):  # keep the terminal quiet
             pass

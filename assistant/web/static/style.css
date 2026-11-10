@@ -1,0 +1,90 @@
+:root {
+  --bg: #f6f6f4; --panel: #ffffff; --text: #1d1d1f; --muted: #6b6b70;
+  --me: #2f6fde; --me-text: #ffffff; --border: #e2e2e0;
+  --ok: #1f8a4c; --no: #b3261e; --warn-bg: #fff6e0;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141416; --panel: #1f1f22; --text: #ececee; --muted: #9a9aa2;
+    --me: #3d7bf0; --me-text: #ffffff; --border: #2e2e33;
+    --ok: #3fb06f; --no: #e5605a; --warn-bg: #2f2816;
+  }
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--bg); color: var(--text);
+  font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  display: flex; flex-direction: column;
+}
+button, input, textarea { font: inherit; color: inherit; }
+
+/* Header and tabs */
+header {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 8px 12px; padding-top: max(8px, env(safe-area-inset-top));
+  border-bottom: 1px solid var(--border); background: var(--panel);
+}
+nav { display: flex; gap: 4px; }
+nav button {
+  border: 0; background: transparent; padding: 8px 12px; border-radius: 10px;
+  color: var(--muted); font-weight: 600;
+}
+nav button[aria-selected="true"] { background: var(--bg); color: var(--text); }
+.small {
+  border: 1px solid var(--border); background: transparent; color: var(--muted);
+  border-radius: 8px; padding: 6px 10px; font-size: 14px;
+}
+.view { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.view[hidden] { display: none; }
+
+/* Chat */
+#log { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.msg {
+  max-width: 85%; padding: 10px 12px; border-radius: 14px;
+  white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.me { align-self: flex-end; background: var(--me); color: var(--me-text); border-bottom-right-radius: 4px; }
+.bot { align-self: flex-start; background: var(--panel); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+.error { align-self: center; color: var(--no); font-size: 14px; }
+.question { align-self: stretch; background: var(--warn-bg); border: 1px solid var(--border); }
+.question .actions { display: flex; gap: 8px; margin-top: 10px; }
+.question button { flex: 1; padding: 10px; border-radius: 10px; border: 0; color: #fff; }
+.yes { background: var(--ok); } .no { background: var(--no); }
+.question button:disabled { opacity: .4; }
+.meta { align-self: center; color: var(--muted); font-size: 12px; text-align: center; }
+
+/* Input bars */
+.bar {
+  display: flex; gap: 8px; padding: 10px 12px;
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border); background: var(--panel);
+}
+.bar.top { border-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+.bar textarea, .bar input {
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 10px 12px; background: var(--bg); min-width: 0;
+}
+.bar textarea { flex: 1; resize: none; max-height: 140px; }
+#task-title { flex: 1; }
+#task-due { width: 9.5em; }
+.bar button {
+  border: 0; border-radius: 12px; padding: 0 16px;
+  background: var(--me); color: var(--me-text);
+}
+.bar button:disabled { opacity: .5; }
+
+/* Tasks */
+.toggle { display: flex; gap: 8px; align-items: center; padding: 10px 16px; color: var(--muted); font-size: 14px; }
+#task-list { list-style: none; margin: 0; padding: 0 12px 24px; overflow-y: auto; flex: 1; }
+#task-list li {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  padding: 10px 12px; margin-bottom: 8px;
+}
+#task-list input[type="checkbox"] { width: 22px; height: 22px; flex: none; }
+#task-list .title { flex: 1; overflow-wrap: anywhere; }
+#task-list .done .title { text-decoration: line-through; color: var(--muted); }
+#task-list .due { font-size: 13px; color: var(--muted); white-space: nowrap; }
+#task-list .late { color: var(--no); font-weight: 600; }
+#task-list .delete { border: 0; background: transparent; color: var(--muted); font-size: 20px; padding: 0 4px; }
