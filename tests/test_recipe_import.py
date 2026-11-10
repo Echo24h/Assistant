@@ -26,7 +26,7 @@ def test_reads_schema_org_recipe(monkeypatch):
     assert recipe["title"] == "Gratin & courgettes"
     assert recipe["servings"] == 4
     assert recipe["ingredients"] == [
-        {"name": "courgettes", "quantity": 1000, "unit": "g"},
+        {"name": "courgettes", "quantity": 1000, "unit": "g"},  # as written: matched later
         {"name": "crème", "quantity": 200, "unit": "ml"},
         {"name": "sel", "quantity": None, "unit": None},
     ]

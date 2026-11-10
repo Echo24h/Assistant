@@ -30,10 +30,12 @@ from urllib.parse import parse_qs, urlsplit
 import anthropic
 
 from ..app import api_error_message, build_agent, open_database
+from ..services.products import language_code
 from ..services.users import User
 from .api import SharedDB
 from .bugs_api import BugsAPI
 from .finances_api import FinancesAPI
+from .products_api import ProductsAPI
 from .recipes_api import RecipesAPI
 from .shopping_api import ShoppingAPI
 from .tasks_api import TasksAPI
@@ -136,12 +138,12 @@ class App:
         self.calendar = calendar
         self.gmail = gmail
         conn, self.owner = open_database(cfg)
-        self.db = SharedDB(conn, cfg.currency)  # one connection + one lock for all the web APIs
+        self.db = SharedDB(conn, cfg.currency, language_code(cfg.language))  # one connection + one lock for all the web APIs
         self.sessions: dict[str, Session] = {}
         self.lock = threading.Lock()  # protects self.sessions
         # Direct features, no model: one API per domain (web/*_api.py).
         self.apis = [TasksAPI(self.db), RecipesAPI(self.db), ShoppingAPI(self.db),
-                     FinancesAPI(self.db), BugsAPI(self.db)]
+                     FinancesAPI(self.db), BugsAPI(self.db), ProductsAPI(self.db)]
 
     def direct(self, method: str, user: User, path: str, payload: dict) -> dict | None:
         """Ask each domain API in turn; None if no API knows this path."""

@@ -8,6 +8,7 @@ that the shopping list can add up the same ingredient from two recipes.
 import re
 import sqlite3
 
+from .products import Products
 from .users import User
 
 MAX_TITLE = 200
@@ -25,9 +26,6 @@ UNITS = {
     "pièce": (None, 1), "pièces": (None, 1), "piece": (None, 1), "pieces": (None, 1),
 }
 
-
-# How a stored unit is written back for people (and read again by UNITS).
-SPOKEN_UNITS = {"tsp": "c. à café", "tbsp": "c. à soupe"}
 
 NUMBER = re.compile(r"^\s*(\d+/\d+|\d+(?:[.,]\d+)?|[½¼¾])\s*")
 FRACTIONS = {"½": 0.5, "¼": 0.25, "¾": 0.75}
@@ -65,7 +63,7 @@ def to_number(text: str) -> float:
 
 def clean_ingredient(name: str, quantity: float | None, unit: str | None) -> dict:
     """Check one ingredient and normalize it: {"name", "quantity", "unit"}."""
-    name = name.strip().lower()
+    name = re.sub(r"\s+", " ", name.strip())  # the product is found later (products.py)
     if not 0 < len(name) <= 100:
         raise ValueError("ingredient name: 1 to 100 characters")
     if quantity is not None and not quantity > 0:
@@ -96,26 +94,17 @@ def check_recipe(title: str, servings: int, ingredients: list[dict],
     return title, items
 
 
-def ingredient_line(item: dict) -> str:
-    """The opposite of parse_ingredient_line: {500, "g", "pâtes"} -> "500 g pâtes".
-    Used to edit a recipe as text; reading the line back gives the same item."""
-    quantity = item["quantity"]
-    if quantity is None:
-        return item["name"]
-    number = f"{quantity:.2f}".rstrip("0").rstrip(".")  # 500.0 -> "500", 0.5 -> "0.5"
-    unit = SPOKEN_UNITS.get(item["unit"], item["unit"])
-    return f"{number} {unit} {item['name']}" if unit else f"{number} {item['name']}"
-
-
 class Recipes:
-    def __init__(self, conn: sqlite3.Connection, user: User):
+    def __init__(self, conn: sqlite3.Connection, user: User, products: Products):
         self.conn = conn
         self.me = user.id
+        self.products = products
 
     def add(self, title: str, servings: int, ingredients: list[dict],
             instructions: str = "", source_url: str | None = None) -> dict:
         """ingredients: [{"name", "quantity", "unit"}] (quantity and unit may be None)."""
         title, items = check_recipe(title, servings, ingredients, instructions)
+        self.products.check_known([i["name"] for i in items])
         with self.conn:  # the recipe and all its ingredients, or nothing
             cur = self.conn.execute(
                 "INSERT INTO recipes (title, servings, instructions, source_url, created_by) "
@@ -139,6 +128,8 @@ class Recipes:
         title, items = check_recipe(title, servings,
                                     current["ingredients"] if ingredients is None else ingredients,
                                     instructions)
+        if ingredients is not None:
+            self.products.check_known([i["name"] for i in items])
         with self.conn:  # the recipe and its new ingredients, or nothing
             self.conn.execute(
                 "UPDATE recipes SET title = ?, servings = ?, instructions = ? WHERE id = ?",
@@ -153,10 +144,26 @@ class Recipes:
     def _insert_ingredients(self, recipe_id: int, items: list[dict]) -> None:
         """Runs inside the caller's transaction."""
         self.conn.executemany(
-            "INSERT INTO recipe_ingredients (recipe_id, position, name, quantity, unit) "
+            "INSERT INTO recipe_ingredients (recipe_id, position, product_id, quantity, unit) "
             "VALUES (?, ?, ?, ?, ?)",
-            [(recipe_id, n, i["name"], i["quantity"], i["unit"]) for n, i in enumerate(items)],
+            [(recipe_id, n, self.products.id_for(i["name"]), i["quantity"], i["unit"])
+             for n, i in enumerate(items)],
         )
+
+    def add_imported(self, recipe: dict) -> dict:
+        """A recipe from a website (recipe_import.py). Strict like the rest:
+        ingredients that match no product are NOT invented; they are kept,
+        as text, at the end of the instructions, to check by hand."""
+        known = [i for i in recipe["ingredients"] if self.products.catalog.find(i["name"])]
+        unknown = [i["name"] for i in recipe["ingredients"] if i not in known]
+        instructions = recipe["instructions"]
+        if unknown:
+            instructions += "\n\nIngrédients non reconnus : " + ", ".join(unknown)
+        if not known:
+            raise ValueError("No ingredient of this recipe is a known product: "
+                             + ", ".join(unknown))
+        return self.add(recipe["title"], recipe["servings"], known, instructions[:MAX_INSTRUCTIONS],
+                        recipe["source_url"])
 
     def list(self, search: str | None = None) -> list[dict]:
         """Titles only (short = fewer tokens). search: part of the title."""
@@ -176,8 +183,9 @@ class Recipes:
             return None
         recipe = dict(row)
         recipe["ingredients"] = [dict(i) for i in self.conn.execute(
-            "SELECT name, quantity, unit FROM recipe_ingredients "
-            "WHERE recipe_id = ? ORDER BY position", (recipe_id,))]
+            "SELECT p.name, r.quantity, r.unit FROM recipe_ingredients r "
+            "JOIN products p ON p.id = r.product_id "
+            "WHERE r.recipe_id = ? ORDER BY r.position", (recipe_id,))]
         return recipe
 
     def delete(self, recipe_id: int) -> bool:

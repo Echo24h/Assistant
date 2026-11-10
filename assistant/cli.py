@@ -11,6 +11,7 @@ from .app import api_error_message, build_agent, connect_google, open_database
 from .config import load_config
 from .services.bugs import image_type
 from .services.household import user_data
+from .services.products import CATALOG_FILE
 
 
 def confirm_in_terminal(question: str) -> bool:
@@ -68,6 +69,30 @@ def save_bug_image(cfg, reports, bug_id: int) -> Path:
     return path
 
 
+def products(cfg, args: list[str]) -> None:
+    """products: requests for new products, and products to fix.
+    products done 3: request 3 is handled (added to assistant/data/products.toml)."""
+    conn, owner = open_database(cfg)  # also syncs the catalog file
+    catalog = user_data(conn, owner).products
+    if len(args) == 2 and args[0] == "done" and args[1].isdigit():
+        ok = catalog.close_request(int(args[1]))
+        return print(f"Request {args[1]}: done." if ok else f"No request {args[1]}.")
+    if args:
+        sys.exit("Usage: python -m assistant products [done ID]")
+    print(f"{len(catalog.names())} products in {CATALOG_FILE}")
+    requests = catalog.requests()
+    print(f"\nRequests ({len(requests)}):" if requests else "\nNo request.")
+    for r in requests:
+        print(f"  #{r['id']}  {r['name']}  ({r['requested_by']}, {r['created_at']})")
+    retired = catalog.retired_in_use()
+    print("\nNot in the file but still used (add them, or change the recipes):"
+          if retired else "\nEvery product in use is in the file.")
+    for p in retired:
+        where = [f"recipes: {p['recipes']}"] if p["recipes"] else []
+        where += [f"{p['on_list']} on the shopping list"] if p["on_list"] else []
+        print(f"  {p['name']}  ({', '.join(where)})")
+
+
 def main() -> None:
     cfg = load_config()
     args = sys.argv[1:]
@@ -75,8 +100,10 @@ def main() -> None:
         return login(cfg)
     if args[:1] == ["bugs"]:
         return bugs(cfg, args[1:])
+    if args[:1] == ["products"]:
+        return products(cfg, args[1:])
     if args not in ([], ["brief"], ["web"]):
-        sys.exit("Usage: python -m assistant [login | brief | web | bugs]")
+        sys.exit("Usage: python -m assistant [login | brief | web | bugs | products]")
 
     calendar, gmail = connect_google(cfg, interactive=False)
 

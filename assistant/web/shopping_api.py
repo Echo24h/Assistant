@@ -1,7 +1,7 @@
 """Shopping tab: the shared list, used in the shop (services/shopping.py)."""
 
-from ..services.recipes import parse_ingredient_line
 from .api import SharedDB, field, id_of
+from .recipes_api import ingredient_row
 
 
 class ShoppingAPI:
@@ -17,8 +17,8 @@ class ShoppingAPI:
     def post(self, user, path: str, data: dict) -> dict | None:
         with self.db.data_for(user) as mine:
             shopping = mine.shopping
-            if path == "/api/shopping/add":  # one typed line: "2 l de lait"
-                item = parse_ingredient_line(field(data, "text", str))
+            if path == "/api/shopping/add":  # one row: quantity, unit, product
+                item = ingredient_row(data)
                 return shopping.add(item["name"], item["quantity"], item["unit"])
             if path == "/api/shopping/check":
                 return {"ok": shopping.set_checked(id_of(data), field(data, "checked", bool))}

@@ -1,22 +1,28 @@
 """The shopping list, shared by the household.
 
-Adding an ingredient that is already on the list (same name, same unit,
+Adding a product that is already on the list (same product, same unit,
 not yet in the cart) adds up the quantities instead of making a new line.
+The list is sorted by shop aisle (aisles come from services/products.py).
 """
 
 import sqlite3
 
+from .products import Products, aisle_order
 from .recipes import Recipes, clean_ingredient
 from .users import User
 
-COLUMNS = "id, name, quantity, unit, checked, recipe_id"
+# A shopping line with its product's name and aisle (s = shopping_items).
+SELECT = ("SELECT s.id, p.name, p.aisle, s.quantity, s.unit, s.checked, s.recipe_id "
+          "FROM shopping_items s JOIN products p ON p.id = s.product_id")
 
 
 class Shopping:
-    def __init__(self, conn: sqlite3.Connection, user: User, recipes: Recipes):
+    def __init__(self, conn: sqlite3.Connection, user: User, recipes: Recipes,
+                 products: Products):
         self.conn = conn
         self.me = user.id
         self.recipes = recipes
+        self.products = products
 
     def add(self, name: str, quantity: float | None = None, unit: str | None = None,
             recipe_id: int | None = None) -> dict:
@@ -39,11 +45,11 @@ class Shopping:
             ]
 
     def list(self, include_checked: bool = False) -> list[dict]:
-        """Not in the cart first, then by name."""
-        sql = f"SELECT {COLUMNS} FROM shopping_items"
+        """Not in the cart first, then in the order of the shop's aisles."""
+        sql = SELECT
         if not include_checked:
-            sql += " WHERE checked = 0"
-        sql += " ORDER BY checked, name"
+            sql += " WHERE s.checked = 0"
+        sql += f" ORDER BY s.checked, {aisle_order('p.aisle')}, p.name"
         return [dict(row) for row in self.conn.execute(sql)]
 
     def set_checked(self, item_id: int, checked: bool) -> bool:
@@ -65,16 +71,16 @@ class Shopping:
     def _add(self, item: dict, recipe_id: int | None) -> dict:
         """Merge with the same line if there is one. Runs inside a transaction."""
         # "unit IS ?" and not "unit = ?": in SQL, NULL = NULL is not true.
+        product_id = self.products.id_for(item["name"])  # strict: unknown -> ValueError
         same = self.conn.execute(
-            f"SELECT {COLUMNS} FROM shopping_items "
-            "WHERE checked = 0 AND name = ? AND unit IS ?",
-            (item["name"], item["unit"]),
+            "SELECT id FROM shopping_items WHERE checked = 0 AND product_id = ? AND unit IS ?",
+            (product_id, item["unit"]),
         ).fetchone()
         if same is None:
             cur = self.conn.execute(
-                "INSERT INTO shopping_items (name, quantity, unit, recipe_id, added_by) "
+                "INSERT INTO shopping_items (product_id, quantity, unit, recipe_id, added_by) "
                 "VALUES (?, ?, ?, ?, ?)",
-                (item["name"], item["quantity"], item["unit"], recipe_id, self.me),
+                (product_id, item["quantity"], item["unit"], recipe_id, self.me),
             )
             item_id = cur.lastrowid
         else:
@@ -82,8 +88,7 @@ class Shopping:
             if item["quantity"] is not None:  # "some tomatoes" + 3 tomatoes = 3 tomatoes
                 self.conn.execute("UPDATE shopping_items SET quantity = COALESCE(quantity, 0) + ? "
                                   "WHERE id = ?", (item["quantity"], item_id))
-        return dict(self.conn.execute(
-            f"SELECT {COLUMNS} FROM shopping_items WHERE id = ?", (item_id,)).fetchone())
+        return dict(self.conn.execute(f"{SELECT} WHERE s.id = ?", (item_id,)).fetchone())
 
 
 def scale(quantity: float | None, factor: float) -> float | None:

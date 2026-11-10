@@ -11,6 +11,7 @@ from .services.google.gmail import Gmail
 from .services.google.auth import LoginRequired, get_credentials, google_service
 from .services.google.calendar import Calendar
 from .services.household import open_household, user_data
+from .services.products import language_code
 from .services.db import connect
 from .services.users import User
 
@@ -33,7 +34,7 @@ def connect_google(cfg, interactive: bool):
 
 def open_database(cfg):
     """Open (and upgrade) the database, sync the household; return (conn, owner)."""
-    return open_household(cfg.db_path, cfg.people)
+    return open_household(cfg.db_path, cfg.people, language_code(cfg.language))
 
 
 def build_agent(cfg, confirm, user: User, calendar, gmail) -> Agent:
@@ -41,7 +42,7 @@ def build_agent(cfg, confirm, user: User, calendar, gmail) -> Agent:
 
     calendar and gmail: given for the owner only (they are the owner's accounts).
     """
-    data = user_data(connect(cfg.db_path), user, cfg.currency)  # own connection: runs in its own thread
+    data = user_data(connect(cfg.db_path), user, cfg.currency, language_code(cfg.language))  # own connection: runs in its own thread
     return Agent(
         client=anthropic.Anthropic(),  # reads ANTHROPIC_API_KEY from the environment
         toolbox=ToolBox(data, confirm=confirm, calendar=calendar, gmail=gmail),

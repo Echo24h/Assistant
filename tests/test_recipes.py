@@ -21,9 +21,9 @@ def data():
 def test_recipe_is_stored_normalized(data):
     recipe = data.recipes.add("Pâtes tomate", 2, PASTA, "Cuire les pâtes.")
     assert recipe["ingredients"] == [
-        {"name": "pâtes", "quantity": 500, "unit": "g"},  # kg -> g, lowercase
-        {"name": "tomate", "quantity": 4, "unit": None},
-        {"name": "sel", "quantity": None, "unit": None},
+        {"name": "Pâtes", "quantity": 500, "unit": "g"},  # kg -> g, the product's name
+        {"name": "Tomate", "quantity": 4, "unit": None},
+        {"name": "Sel", "quantity": None, "unit": None},
     ]
     assert data.recipes.list("tomate") == [{"id": recipe["id"], "title": "Pâtes tomate",
                                             "servings": 2}]
@@ -40,13 +40,13 @@ def test_bad_recipes_are_refused(data):
 
 def test_recipe_to_shopping_list_scales_and_merges(data):
     recipe = data.recipes.add("Pâtes tomate", 2, PASTA)
-    data.shopping.add("tomate", 1)  # already on the list
+    data.shopping.add("tomates", 1)  # already on the list (any way of writing it)
     data.shopping.add_recipe(recipe["id"], servings=4)  # for 4 people: x2
 
     items = {i["name"]: i for i in data.shopping.list()}
-    assert items["pâtes"]["quantity"] == 1000 and items["pâtes"]["unit"] == "g"
-    assert items["tomate"]["quantity"] == 9  # 1 + 4 x 2: one line, not two
-    assert items["sel"]["quantity"] is None
+    assert items["Pâtes"]["quantity"] == 1000 and items["Pâtes"]["unit"] == "g"
+    assert items["Tomate"]["quantity"] == 9  # 1 + 4 x 2: one line, not two
+    assert items["Sel"]["quantity"] is None
     assert len(items) == 3
 
 
@@ -92,16 +92,6 @@ def test_agent_tools_for_recipes_and_shopping(data):
         box.run("get_recipe", {"recipe_id": 999})
 
 
-def test_ingredient_lines_read_back_the_same():
-    from assistant.services.recipes import ingredient_line, parse_ingredient_line
-    for item in [{"name": "pâtes", "quantity": 500.0, "unit": "g"},
-                 {"name": "huile d'olive", "quantity": 2.0, "unit": "tbsp"},
-                 {"name": "citron", "quantity": 0.5, "unit": None},
-                 {"name": "lait", "quantity": 1500.0, "unit": "ml"},
-                 {"name": "sel", "quantity": None, "unit": None}]:
-        assert parse_ingredient_line(ingredient_line(item)) == item, item
-
-
 def test_update_recipe(data):
     recipe = data.recipes.add("Pâtes tomate", 2, PASTA, "Cuire.")
     data.shopping.add_recipe(recipe["id"])  # already on the shopping list
@@ -111,8 +101,8 @@ def test_update_recipe(data):
     assert len(changed["ingredients"]) == 3 and changed["instructions"] == "Cuire."  # kept
 
     changed = data.recipes.update(recipe["id"], ingredients=[
-        {"name": "Spaghetti", "quantity": 400, "unit": "g"}])
-    assert changed["ingredients"] == [{"name": "spaghetti", "quantity": 400, "unit": "g"}]
+        {"name": "Spaghetti", "quantity": 400, "unit": "g"}])  # an alias of Pâtes
+    assert changed["ingredients"] == [{"name": "Pâtes", "quantity": 400, "unit": "g"}]
     assert len(data.shopping.list()) == 3  # the shopping list is not changed
 
     with pytest.raises(ValueError, match="ingredients"):

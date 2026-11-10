@@ -67,14 +67,7 @@
   <div class="scroll">
     <details id="recipe-new" class="card">
       <summary>✍️ Écrire une recette</summary>
-      <form id="recipe-form" class="stack">
-        <input id="recipe-title" placeholder="Titre" maxlength="200" required>
-        <label>Pour <input id="recipe-servings" type="number" min="1" max="100" value="2" required> personnes</label>
-        <textarea id="recipe-ingredients" rows="6" required
-                  placeholder="Un ingrédient par ligne :&#10;500 g de pâtes&#10;4 tomates&#10;sel"></textarea>
-        <textarea id="recipe-instructions" rows="5" placeholder="Étapes (facultatif)"></textarea>
-        <button type="submit">Enregistrer</button>
-      </form>
+      <div id="recipe-new-form"></div>
     </details>
     <ul id="recipe-list" class="list"></ul>
     <p id="recipe-empty" class="meta" hidden>Aucune recette : importe un lien, écris-en une,
@@ -85,7 +78,7 @@
 <!-- Shopping list, shared by the household (no model, 0 tokens) -->
 <section id="view-shopping" class="view" hidden>
   <form id="shop-form" class="bar top">
-    <input id="shop-text" placeholder="2 l de lait, 6 œufs…" maxlength="150" autocomplete="off" required>
+    <div id="shop-row"></div>
     <button type="submit">Ajouter</button>
   </form>
   <div class="scroll">
@@ -123,6 +116,9 @@
     <ul id="fin-list" class="list"></ul>
   </div>
 </section>
+
+<!-- Product names from the catalog, suggested while typing (app.js) -->
+<datalist id="product-names"></datalist>
 
 <!-- Bug report (🐞): stored on our server only -->
 <dialog id="bug-dialog">

@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const importForm = document.getElementById("import-form");
   const importUrl = document.getElementById("import-url");
   const newBox = document.getElementById("recipe-new");
-  const form = document.getElementById("recipe-form");
+  const newForm = document.getElementById("recipe-new-form");
 
   async function load() {
     const result = await api("GET", "/api/recipes");
@@ -81,49 +81,86 @@ document.addEventListener("DOMContentLoaded", () => {
     body.append(remove);
   }
 
-  // Edit in place: the same fields as "Écrire une recette", filled in.
-  function editor(body, recipe) {
-    body.textContent = "";
+  // Ingredients as rows (productRow in app.js), with × and "+ Ingrédient".
+  // Nothing typed has to be guessed: the page sends a list of objects.
+  function ingredientRows(items) {
+    const box = el("div", "ingredient-rows");
+    const rows = el("div");
+    const add = el("button", "small", "+ Ingrédient");
+    add.type = "button";
+
+    function addRow(item) {
+      const row = productRow(item);
+      const remove = el("button", "delete", "×");
+      remove.type = "button";
+      remove.setAttribute("aria-label", "Retirer cet ingrédient");
+      remove.addEventListener("click", () => row.remove());
+      row.append(remove);
+      rows.append(row);
+      return row.querySelector(".name");
+    }
+
+    for (const item of items) addRow(item);
+    if (!items.length) addRow();
+    add.addEventListener("click", () => addRow().focus());
+    box.append(rows, add);
+    box.rows = () => [...rows.children].map(readProductRow).filter(Boolean);
+    return box;
+  }
+
+  // One form to write a new recipe (recipe = null) or to change one.
+  function recipeForm(recipe, done) {
     const form = el("form", "stack");
     const title = el("input");
-    title.value = recipe.title;
+    title.placeholder = "Titre";
     title.maxLength = 200;
     title.required = true;
+    title.value = recipe ? recipe.title : "";
     const servings = el("input");
     servings.type = "number";
     servings.min = 1;
     servings.max = 100;
-    servings.value = recipe.servings;
+    servings.required = true;
+    servings.value = recipe ? recipe.servings : 2;
     const people = el("label", "", "Pour ");
     people.append(servings, " personnes");
-    const ingredients = el("textarea");
-    ingredients.rows = Math.max(4, recipe.ingredients.length + 1);
-    ingredients.value = recipe.ingredient_lines;
-    ingredients.required = true;
+    const ingredients = ingredientRows(recipe ? recipe.ingredients : []);
     const steps = el("textarea");
     steps.rows = 5;
-    steps.value = recipe.instructions;
     steps.placeholder = "Étapes (facultatif)";
+    steps.value = recipe ? recipe.instructions : "";
     const buttons = el("div", "row");
-    const save = el("button", "", "Enregistrer");
-    const cancel = el("button", "small", "Annuler");
-    cancel.type = "button";
-    cancel.addEventListener("click", load);
-    buttons.append(save, cancel);
-    form.append(title, people, ingredients, steps, buttons);
+    buttons.append(el("button", "", "Enregistrer"));
+    if (recipe) {
+      const cancel = el("button", "small", "Annuler");
+      cancel.type = "button";
+      cancel.addEventListener("click", done);
+      buttons.append(cancel);
+    }
+    form.append(title, people, el("strong", "", "Ingrédients"), ingredients, steps, buttons);
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const result = await api("POST", "/api/recipes/update", {
-        id: recipe.id,
-        title: title.value,
-        servings: Number(servings.value),
-        ingredients: ingredients.value,
-        instructions: steps.value,
-      });
-      if (result.type === "error") return alert(result.text);
-      load();
+      let rows;
+      try {
+        rows = ingredients.rows();
+      } catch (error) {
+        return alert(error.message);
+      }
+      const data = { title: title.value, servings: Number(servings.value),
+                     ingredients: rows, instructions: steps.value };
+      const result = recipe
+        ? await api("POST", "/api/recipes/update", { id: recipe.id, ...data })
+        : await api("POST", "/api/recipes/add", data);
+      if (result.type === "error") return offerProductRequest(result.text);
+      done();
     });
-    body.append(form);
+    return form;
+  }
+
+  function editor(body, recipe) {
+    body.textContent = "";
+    body.append(recipeForm(recipe, load));
   }
 
   importForm.addEventListener("submit", async (e) => {
@@ -139,19 +176,11 @@ document.addEventListener("DOMContentLoaded", () => {
     load();
   });
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const result = await api("POST", "/api/recipes/add", {
-      title: document.getElementById("recipe-title").value,
-      servings: Number(document.getElementById("recipe-servings").value),
-      ingredients: document.getElementById("recipe-ingredients").value,
-      instructions: document.getElementById("recipe-instructions").value,
-    });
-    if (result.type === "error") return alert(result.text);
-    form.reset();
-    newBox.open = false;
-    load();
+  // "Écrire une recette": a fresh form each time the box is opened.
+  newBox.addEventListener("toggle", () => {
+    newForm.textContent = "";
+    if (newBox.open) newForm.append(recipeForm(null, () => { newBox.open = false; load(); }));
   });
 
-  onShow.recipes = load;
+  onShow.recipes = () => { load(); loadProductNames(); };
 });

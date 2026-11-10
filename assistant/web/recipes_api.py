@@ -1,8 +1,11 @@
-"""Recipes tab: list, read, type in, import from a website, send to shopping."""
+"""Recipes tab: list, read, write or edit, import from a website, send to shopping.
+
+The page edits ingredients as rows (quantity, unit, name): it sends them
+as a list, so nothing typed has to be guessed.
+"""
 
 from ..services.recipe_import import fetch_recipe
-from ..services.recipes import ingredient_line, parse_ingredient_line
-from .api import SharedDB, field, id_of, query_id
+from .api import BadRequest, SharedDB, field, id_of, query_id
 
 
 class RecipesAPI:
@@ -18,8 +21,6 @@ class RecipesAPI:
                 recipe = data.recipes.get(query_id(query))
             if recipe is None:
                 raise ValueError("This recipe does not exist any more.")
-            # The ingredients as editable text, one per line ("500 g pâtes").
-            recipe["ingredient_lines"] = "\n".join(map(ingredient_line, recipe["ingredients"]))
             return recipe
         return None
 
@@ -28,14 +29,14 @@ class RecipesAPI:
             # Download first, WITHOUT the database lock (it can take 10 s).
             recipe = fetch_recipe(field(data, "url", str))
             with self.db.data_for(user) as mine:
-                return mine.recipes.add(**recipe)
+                return mine.recipes.add_imported(recipe)
 
         with self.db.data_for(user) as mine:
             if path == "/api/recipes/add":
                 return mine.recipes.add(
                     field(data, "title", str),
                     field(data, "servings", int),
-                    typed_ingredients(data),
+                    ingredient_rows(data),
                     field(data, "instructions", str, optional=True) or "",
                 )
             if path == "/api/recipes/update":  # the page sends the whole recipe
@@ -43,7 +44,7 @@ class RecipesAPI:
                     id_of(data),
                     field(data, "title", str),
                     field(data, "servings", int),
-                    typed_ingredients(data),
+                    ingredient_rows(data),
                     field(data, "instructions", str, optional=True) or "",
                 )
             if path == "/api/recipes/delete":
@@ -55,7 +56,26 @@ class RecipesAPI:
         return None
 
 
-def typed_ingredients(data: dict) -> list[dict]:
-    """Ingredients typed one per line ("500 g de pâtes"); empty lines skipped."""
-    lines = field(data, "ingredients", str).splitlines()
-    return [parse_ingredient_line(line) for line in lines if line.strip()]
+def ingredient_row(row) -> dict:
+    """{"name": "Pâtes", "quantity": 400, "unit": "g"}: the shape only (types).
+    Shared with the shopping tab, which adds one row at a time."""
+    if not isinstance(row, dict):
+        raise BadRequest("ingredients: a list of {name, quantity, unit}")
+    return {"name": field(row, "name", str),
+            "quantity": number(row.get("quantity")),
+            "unit": field(row, "unit", str, optional=True)}
+
+
+def ingredient_rows(data: dict) -> list[dict]:
+    """[{"name": "pâtes", "quantity": 400, "unit": "g"}, ...] as sent by the page.
+    Only the shape is checked here; the rules are in services/recipes.py."""
+    return [ingredient_row(row) for row in field(data, "ingredients", list)]
+
+
+def number(value) -> float | None:
+    """A quantity: a number or null (True/False are not numbers here)."""
+    if value is None:
+        return None
+    if type(value) not in (int, float):
+        raise BadRequest("quantity: a number or null")
+    return value

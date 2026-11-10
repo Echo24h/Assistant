@@ -233,6 +233,20 @@ expense_shares(expense_id → expenses CASCADE, user_id → users, amount_cents)
 3. Finances (outils + onglet, solde) : **fait**.
 4. Accès de ma copine (Tailscale, outils selon la personne, tâche perso) : **fait**.
 
+### Catalogue de produits (décidé le 11.11.2026)
+- Liste **stricte**, écrite par moi seul dans `assistant/data/products.toml`
+  (versionnée, relue, traduisible) : clé anglaise stable, nom par langue,
+  rayon, alias. TOML plutôt que JSON (commentaires, `tomllib` sans dépendance).
+- La base suit le fichier au démarrage (comme les utilisateurs suivent
+  `.env`) ; un produit retiré mais encore utilisé reste, signalé.
+- Rien n'est deviné : un nom inconnu est refusé avec des suggestions ; on
+  peut **demander l'ajout** (page ou chat), je vois les demandes avec
+  `python -m assistant products`. L'import par lien garde les ingrédients
+  inconnus en texte.
+- Abandonné : rayons choisis dans la page, règle du singulier pour
+  fusionner les noms (la correspondance sert seulement à retrouver un
+  produit, elle ne modifie jamais les données).
+
 ### Migration vers un serveur
 - Code par `git clone`, `.env` par `scp`, données par `rsync`
   (`~/.local/share/assistant/`) ; service `deploy/assistant-web.service`.

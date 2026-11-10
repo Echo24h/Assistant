@@ -114,6 +114,7 @@ python -m assistant          # chat in the terminal
 python -m assistant brief    # morning brief: today's events, important email, tasks
 python -m assistant web      # chat page for the phone (see above)
 python -m assistant bugs     # bugs reported with 🐞 or in the chat (bugs fix 3)
+python -m assistant products # product requests, and products to fix (products done 3)
 pytest                       # tests use fake clients: no API key, no Google account
 ```
 
@@ -125,7 +126,7 @@ assistant/
               db.py + migrations/   SQLite, numbered SQL files
               household.py          entry point: what one person can see
               users.py, tasks.py,   one module per domain
-              recipes.py, shopping.py, finances.py
+              products.py, recipes.py, shopping.py, finances.py, bugs.py
               google/               code talking to the outside: auth.py,
               recipe_import.py      calendar.py, gmail.py; recipe downloads
   agent/      the AI: loop.py (the hand-written agent loop) and tools/
@@ -151,6 +152,8 @@ printf '#!/bin/sh\nexec gitleaks protect --staged --redact -c .gitleaks.toml\n' 
 - [x] Tasks tab without the model (0 tokens), task priorities
 - [x] Household database (migrations, users, shared or private tasks)
 - [x] Recipes and shared shopping list (scaled, added up), import by link
+- [x] Strict product catalog in a versioned file (assistant/data/products.toml),
+      translatable; shopping list by aisle; product requests
 - [x] Shared expenses: money in cents, equal shares, who owes whom
 - [x] A second person (Tailscale machine sharing), private tasks, Google for the owner only
 - [ ] Evaluation on synthetic emails

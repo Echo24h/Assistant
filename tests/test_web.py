@@ -57,7 +57,7 @@ def server(monkeypatch):
                         lambda cfg, confirm, user, cal, gm: FakeAgent(confirm))
     users = {"me@gmail.com": "Grégory"}
     cfg = NS(web_users=users, people=users, web_dev_user=None, db_path=":memory:",
-             currency="CHF")
+             currency="CHF", language="French")
     httpd = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(App(cfg, None, None)))
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     yield f"http://127.0.0.1:{httpd.server_port}"
@@ -160,7 +160,7 @@ def test_only_the_owner_gets_google(monkeypatch):
                         given.update({user.name: (cal, gm)}) or FakeAgent(confirm))
     users = {"me@gmail.com": "Grégory", "her@gmail.com": "Anna"}
     cfg = NS(web_users=users, people=users, web_dev_user=None, db_path=":memory:",
-             currency="CHF")
+             currency="CHF", language="French")
     app = App(cfg, calendar="my calendar", gmail="my gmail")
 
     for login in users:
@@ -173,23 +173,25 @@ def test_recipes_and_shopping_tabs(server):
         return call(server, path, body=json.dumps(data).encode(), headers=ME)
 
     status, recipe = post("/api/recipes/add", {
-        "title": "Pâtes", "servings": 2, "ingredients": "500 g de pâtes\n\n4 tomates\nsel",
-        "instructions": "Cuire."})
-    assert status == 200 and len(recipe["ingredients"]) == 3  # the empty line is skipped
+        "title": "Pâtes", "servings": 2, "instructions": "Cuire.", "ingredients": [
+            {"name": "pâtes", "quantity": 500, "unit": "g"},
+            {"name": "tomates", "quantity": 4, "unit": None},
+            {"name": "sel", "quantity": None, "unit": None}]})
+    assert status == 200 and recipe["ingredients"][1]["name"] == "Tomate"
     listed = json.loads(get(server, "/api/recipes")[2])["recipes"]
     assert listed == [{"id": recipe["id"], "title": "Pâtes", "servings": 2}]
     assert json.loads(get(server, f"/api/recipes/get?id={recipe['id']}")[2])["title"] == "Pâtes"
     assert get(server, "/api/recipes/get?id=abc")[0] == 400
 
     assert post("/api/recipes/shop", {"id": recipe["id"], "servings": 4}) == (200, {"added": 3})
-    status, milk = post("/api/shopping/add", {"text": "2 l de lait"})
+    status, milk = post("/api/shopping/add", {"name": "lait", "quantity": 2000, "unit": "ml"})
     assert milk["quantity"] == 2000 and milk["unit"] == "ml"
     items = json.loads(get(server, "/api/shopping")[2])["items"]
-    assert {i["name"]: i["quantity"] for i in items}["pâtes"] == 1000
+    assert {i["name"]: i["quantity"] for i in items}["Pâtes"] == 1000
 
     assert post("/api/shopping/check", {"id": milk["id"], "checked": True})[0] == 200
     assert post("/api/shopping/clear", {}) == (200, {"removed": 1})
-    assert post("/api/recipes/add", {"title": "x", "servings": 2, "ingredients": ""})[0] == 400
+    assert post("/api/recipes/add", {"title": "x", "servings": 2, "ingredients": []})[0] == 400
     assert post("/api/recipes/import", {"url": "http://127.0.0.1/"})[0] == 400  # SSRF
 
 
@@ -240,14 +242,34 @@ def test_edit_a_recipe_in_the_tab(server):
     def post(path, data):
         return call(server, path, body=json.dumps(data).encode(), headers=ME)
 
-    _, recipe = post("/api/recipes/add", {"title": "Pâtes", "servings": 2,
-                                          "ingredients": "500 g de pâtes\n2 c. à soupe d'huile"})
-    page = json.loads(get(server, f"/api/recipes/get?id={recipe['id']}")[2])
-    assert page["ingredient_lines"] == "500 g pâtes\n2 c. à soupe huile"
+    _, recipe = post("/api/recipes/add", {"title": "Pâtes", "servings": 2, "ingredients": [
+        {"name": "pâtes", "quantity": 500, "unit": "g"}]})
+    names = json.loads(get(server, "/api/products")[2])["products"]
+    assert "Pâtes" in names and "Papier toilette" in names  # the products of the file
 
-    status, changed = post("/api/recipes/update", {
-        "id": recipe["id"], "title": "Pâtes à l'huile", "servings": 3,
-        "ingredients": page["ingredient_lines"] + "\nsel", "instructions": "Cuire."})
-    assert status == 200 and changed["servings"] == 3 and len(changed["ingredients"]) == 3
-    assert post("/api/recipes/update", {"id": recipe["id"], "title": "", "servings": 3,
-                                        "ingredients": "sel"})[0] == 400
+    rows = recipe["ingredients"] + [{"name": "Huile d'olive", "quantity": 2, "unit": "tbsp"}]
+    status, changed = post("/api/recipes/update", {"id": recipe["id"], "title": "Pâtes à l'huile",
+                                                   "servings": 3, "ingredients": rows})
+    assert status == 200 and changed["servings"] == 3
+    assert changed["ingredients"][1] == {"name": "Huile d'olive", "quantity": 2, "unit": "tbsp"}
+
+    def update_status(rows):
+        return post("/api/recipes/update", {"id": recipe["id"], "title": "x", "servings": 2,
+                                            "ingredients": rows})[0]
+    assert update_status("500 g de pâtes") == 400  # a list is expected now
+    assert update_status([{"name": "sel", "quantity": True, "unit": None}]) == 400
+    assert update_status([{"name": "sel", "quantity": -2, "unit": None}]) == 400
+    assert update_status(["sel"]) == 400
+
+
+def test_shopping_is_strict_and_sorted_by_aisle(server):
+    def post(path, data):
+        return call(server, path, body=json.dumps(data).encode(), headers=ME)
+
+    post("/api/shopping/add", {"name": "savons", "quantity": 2, "unit": None})
+    post("/api/shopping/add", {"name": "Tomates", "quantity": 3, "unit": None})
+    page = json.loads(get(server, "/api/shopping")[2])
+    assert [(i["name"], i["aisle"]) for i in page["items"]] == [
+        ("Tomate", "fruits et légumes"), ("Savon", "maison")]  # aisles from the file
+    assert post("/api/shopping/add", {"name": "pierre", "quantity": 1})[0] == 400  # unknown
+    assert post("/api/products/request", {"name": "Tahini"})[0] == 200

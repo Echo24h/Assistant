@@ -69,7 +69,8 @@ nav button[aria-selected="true"] { background: var(--bg); color: var(--text); }
 }
 .bar textarea { flex: 1; resize: none; max-height: 140px; }
 #task-form { flex-wrap: wrap; }
-#task-title, #import-url, #shop-text { flex: 1; }
+#task-title, #import-url, #shop-row { flex: 1; min-width: 0; }
+#shop-row .ingredient-row { margin: 0; grid-template-columns: 3.5em 6.5em 1fr; }
 #task-due { width: 9.5em; }
 @media (max-width: 600px) {  /* phone: title on its own line, the rest below */
   #task-title { flex-basis: 100%; }
@@ -101,6 +102,10 @@ nav button[aria-selected="true"] { background: var(--bg); color: var(--text); }
 .list .done .title, .list li.done .title { text-decoration: line-through; color: var(--muted); }
 .list .due { font-size: 13px; color: var(--muted); white-space: nowrap; }
 .list .late { color: var(--no); font-weight: 600; }
+.list li.aisle {
+  background: transparent; border: 0; padding: 12px 4px 2px; margin: 0;
+  font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase;
+}
 .list .delete { border: 0; background: transparent; color: var(--muted); font-size: 20px; padding: 0 4px; }
 .list .prio {
   border: 1px solid var(--border); background: transparent; border-radius: 999px;
@@ -126,6 +131,17 @@ nav button[aria-selected="true"] { background: var(--bg); color: var(--text); }
 .stack button, .row button {
   border: 0; border-radius: 10px; padding: 10px 14px; background: var(--me); color: var(--me-text);
 }
+/* Secondary buttons in forms ("+ Ingrédient", "Annuler"): not the blue of "Enregistrer". */
+.stack button.small, .row button.small {
+  background: transparent; color: var(--text); border: 1px solid var(--border); align-self: flex-start;
+}
+
+/* One ingredient per row: quantity, unit, name, × */
+.ingredient-row { display: grid; grid-template-columns: 4em 7.5em 1fr auto; gap: 6px; margin-bottom: 6px; }
+.ingredient-row input, .ingredient-row select {
+  min-width: 0; border: 1px solid var(--border); border-radius: 10px; padding: 8px; background: var(--bg);
+}
+.ingredient-row .delete { border: 0; background: transparent; color: var(--muted); font-size: 20px; }
 .list li.recipe { flex-direction: column; align-items: stretch; gap: 8px; }
 .recipe-head {
   display: flex; justify-content: space-between; gap: 12px; text-align: left;

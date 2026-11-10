@@ -60,7 +60,9 @@ language. Examples:
 - **Tâches**: add, tick, priority (tap the badge), 👥/🔒 to share or not.
 - **Recettes**: import from a link, type one in, ✏️ edit, send to the
   shopping list for N people.
-- **Courses**: type "2 l de lait", tick in the shop, remove what is ticked.
+- **Courses**: quantity, unit and product (suggested while typing); the
+  list is grouped by aisle in the shop's order; tick in the shop, remove
+  what is ticked.
 - **Budget**: who owes whom at the top, add an expense, the month's list
   and totals per category.
 
@@ -75,10 +77,20 @@ it with `python -m assistant bugs` and closes it with `bugs fix ID`.
 
 ## How shared data works
 
+- **Product catalog** (strict): the only ingredients and shopping items
+  accepted are the products of `assistant/data/products.toml`, written by
+  the developer (stable English key, a name per language, aisle,
+  aliases). The database follows the file at start. A name is matched
+  ignoring case, accents and simple plurals ("tomates", "pq"); anything
+  else is refused, with close names as suggestions — never guessed. A
+  missing product can be requested (button in the page, or the chat); the
+  developer sees the requests with `python -m assistant products`, adds
+  the product to the file and restarts. A recipe imported from a website
+  keeps its unknown ingredients as text at the end of the steps.
 - **Shopping list**: a recipe is scaled to the number of people, and the
-  same item (same name, same unit, not yet ticked) is added up instead of
-  repeated. Units are normalized (kg → g, cl → ml…) so that they can be
-  added.
+  same item (same ingredient, same unit, not yet ticked) is added up
+  instead of repeated. Units are normalized (kg → g, cl → ml…) so that
+  they can be added.
 - **Expenses**: each expense has a payer and shares that add up to the
   amount, in integer cents. *Equal* splits it between everyone (a cent
   left over goes to the payer); *for the other* puts it all on the other

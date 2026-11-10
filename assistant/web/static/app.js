@@ -42,6 +42,70 @@ function formatAmount(quantity, unit) {
   return unit ? `${number} ${UNIT_LABELS[unit] || unit}` : number;
 }
 
+// --- Products (catalog written by the developer: assistant/data/products.toml) ---
+
+// Units a row can have: what the server stores ("" = pieces).
+const UNITS = [["", "pièce"], ["g", "g"], ["ml", "ml"], ["tsp", "c. à café"],
+               ["tbsp", "c. à soupe"]];
+
+// One row: quantity, unit, product (suggested from the catalog while typing).
+// Used by the recipe editor and the shopping tab.
+function productRow(item = { name: "", quantity: null, unit: null }) {
+  const row = el("div", "ingredient-row");
+  const quantity = el("input", "qty");
+  quantity.inputMode = "decimal";
+  quantity.placeholder = "Qté";
+  quantity.setAttribute("aria-label", "Quantité");
+  quantity.value = item.quantity === null ? "" : String(Number(item.quantity.toFixed(2)));
+  const unit = el("select", "unit");
+  unit.setAttribute("aria-label", "Unité");
+  const known = UNITS.some(([value]) => value === (item.unit || ""));
+  for (const [value, label] of known ? UNITS : [...UNITS, [item.unit, item.unit]]) {
+    unit.append(new Option(label, value, false, value === (item.unit || "")));
+  }
+  const name = el("input", "name");
+  name.setAttribute("list", "product-names");
+  name.setAttribute("aria-label", "Produit");
+  name.placeholder = "Produit";
+  name.value = item.name;
+  row.append(quantity, unit, name);
+  return row;
+}
+
+// The row as data, or null if no product is written. Throws on a bad quantity.
+function readProductRow(row) {
+  const name = row.querySelector(".name").value.trim();
+  if (!name) return null;
+  const typed = row.querySelector(".qty").value.trim().replace(",", ".");
+  const quantity = typed === "" ? null : Number(typed);
+  if (quantity !== null && !(quantity > 0)) throw new Error(`Quantité invalide pour « ${name} »`);
+  return { name, quantity, unit: row.querySelector(".unit").value || null };
+}
+
+// The names offered while typing a product (one list for every tab).
+async function loadProductNames() {
+  const result = await api("GET", "/api/products");
+  if (result.type === "error") return;
+  const names = document.getElementById("product-names");
+  names.textContent = "";
+  for (const name of result.products) names.append(new Option(name));
+}
+
+// After an "Unknown product" error: show it, and offer to ask the developer
+// to add each unknown name (the server says them between quotes).
+async function offerProductRequest(errorText) {
+  const names = errorText.startsWith("Unknown product")
+    ? [...errorText.matchAll(/"([^"]+)"/g)].map(m => m[1]) : [];
+  if (!names.length) return alert(errorText);
+  for (const name of names) {
+    if (confirm(`« ${name} » n'est pas dans la liste des produits.\n\n${errorText}\n\n` +
+                `Demander son ajout ?`)) {
+      const result = await api("POST", "/api/products/request", { name });
+      alert(result.type === "error" ? result.text : `Demande envoyée pour « ${name} ».`);
+    }
+  }
+}
+
 // Tabs: show one view, hide the others. Each view can react to being shown.
 const onShow = {};
 function showView(name) {

@@ -34,7 +34,8 @@ DEFINITIONS = [
     },
     {
         "name": "list_shopping_list",
-        "description": "The shopping list: items still to buy (id, name, quantity, unit).",
+        "description": "The shopping list: items still to buy (id, name, aisle, "
+                       "quantity, unit), in the shop's order.",
         "input_schema": {"type": "object", "properties": {}, "additionalProperties": False},
     },
     {
@@ -58,14 +59,19 @@ def functions(data) -> dict:
     """data: services.household.UserData."""
     shopping = data.shopping
     return {
-        "add_to_shopping_list": lambda a: [
-            shopping.add(i["name"], i["quantity"], i["unit"]) for i in a["items"]],
+        "add_to_shopping_list": lambda a: add_items(data, a["items"]),
         "add_recipe_to_shopping_list": lambda a: shopping.add_recipe(
             a["recipe_id"], a["servings"]),
         "list_shopping_list": lambda a: shopping.list(),
         "remove_from_shopping_list": lambda a: {
             "removed": sum(shopping.delete(item_id) for item_id in a["item_ids"])},
     }
+
+
+def add_items(data, items: list[dict]) -> list[dict]:
+    """All the items, or none if one is not a known product (one clear error)."""
+    data.products.check_known([i["name"] for i in items])
+    return [data.shopping.add(i["name"], i["quantity"], i["unit"]) for i in items]
 
 
 def check(data, name: str, args: dict) -> None:
