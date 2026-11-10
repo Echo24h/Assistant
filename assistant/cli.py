@@ -66,6 +66,7 @@ def main() -> None:
         model=cfg.model,
         effort=cfg.effort,
         log_path=cfg.log_path,
+        language=cfg.language,
     )
     if args == ["brief"]:  # one question, then exit (later: run by cron)
         ask_and_print(agent, BRIEF_PROMPT)

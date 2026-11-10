@@ -13,6 +13,7 @@ class Config:
     fast_model: str  # simple repeated tasks (email triage, later)
     effort: str  # how hard the model thinks: low / medium / high
     timezone: str  # IANA name, e.g. Europe/Zurich
+    language: str  # language of the answers, e.g. French
     data_dir: Path  # real data lives here, outside the repository
     google_client_id: str | None  # OAuth client from Google Cloud (Desktop app)
     google_client_secret: str | None
@@ -44,6 +45,7 @@ def load_config() -> Config:
         fast_model=os.getenv("ASSISTANT_FAST_MODEL", "claude-haiku-5-5"),
         effort=os.getenv("ASSISTANT_EFFORT", "low"),
         timezone=os.getenv("ASSISTANT_TIMEZONE", "Europe/Zurich"),
+        language=os.getenv("ASSISTANT_LANGUAGE", "English"),
         data_dir=data_dir,
         google_client_id=os.getenv("GOOGLE_CLIENT_ID") or None,
         google_client_secret=os.getenv("GOOGLE_CLIENT_SECRET") or None,

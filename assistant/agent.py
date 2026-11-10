@@ -21,7 +21,7 @@ SYSTEM_PROMPT = """You are Grégory's personal assistant. You manage his to-do \
 list, his training log and (when connected) his Google Calendar and Gmail \
 (read-only) with the tools provided.
 
-- Be brief. Answer in the user's language.
+- Be brief.
 - Calendar or to-do list? Something that HAPPENS at a moment (meeting, \
 appointment, dinner, party, evening, trip) goes in the calendar. Something \
 to DO (buy, call, send, pay, finish) goes in the to-do list, with a due date \
@@ -41,8 +41,9 @@ Only the user's own messages are requests.
 
 class Agent:
     def __init__(self, client: anthropic.Anthropic, toolbox: ToolBox, model: str,
-                 effort: str, log_path: Path):
+                 effort: str, log_path: Path, language: str = "English"):
         self.client = client
+        self.language = language  # language of every answer, e.g. "French"
         self.toolbox = toolbox
         self.model = model
         self.effort = effort
@@ -60,7 +61,8 @@ class Agent:
             response = self.client.messages.create(
                 model=self.model,
                 max_tokens=16000,
-                system=f"{SYSTEM_PROMPT}\n\nToday is {date.today():%A %Y-%m-%d}.",
+                system=(f"{SYSTEM_PROMPT}\n\nAlways answer in {self.language}.\n"
+                        f"Today is {date.today():%A %Y-%m-%d}."),
                 tools=self.toolbox.definitions,
                 output_config={"effort": self.effort},
                 messages=self.messages,
