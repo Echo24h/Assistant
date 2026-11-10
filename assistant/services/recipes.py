@@ -26,6 +26,9 @@ UNITS = {
 }
 
 
+# How a stored unit is written back for people (and read again by UNITS).
+SPOKEN_UNITS = {"tsp": "c. à café", "tbsp": "c. à soupe"}
+
 NUMBER = re.compile(r"^\s*(\d+/\d+|\d+(?:[.,]\d+)?|[½¼¾])\s*")
 FRACTIONS = {"½": 0.5, "¼": 0.25, "¾": 0.75}
 
@@ -77,6 +80,33 @@ def clean_ingredient(name: str, quantity: float | None, unit: str | None) -> dic
     return {"name": name, "quantity": quantity, "unit": unit}
 
 
+def check_recipe(title: str, servings: int, ingredients: list[dict],
+                 instructions: str) -> tuple[str, list[dict]]:
+    """The rules of a recipe, for adding and changing: (clean title, clean ingredients)."""
+    title = title.strip()
+    if not 0 < len(title) <= MAX_TITLE:
+        raise ValueError(f"title: 1 to {MAX_TITLE} characters")
+    if not 0 < servings <= 100:
+        raise ValueError("servings: 1 to 100")
+    if not 0 < len(ingredients) <= MAX_INGREDIENTS:
+        raise ValueError(f"ingredients: 1 to {MAX_INGREDIENTS}")
+    if len(instructions) > MAX_INSTRUCTIONS:
+        raise ValueError(f"instructions: {MAX_INSTRUCTIONS} characters at most")
+    items = [clean_ingredient(i["name"], i.get("quantity"), i.get("unit")) for i in ingredients]
+    return title, items
+
+
+def ingredient_line(item: dict) -> str:
+    """The opposite of parse_ingredient_line: {500, "g", "pâtes"} -> "500 g pâtes".
+    Used to edit a recipe as text; reading the line back gives the same item."""
+    quantity = item["quantity"]
+    if quantity is None:
+        return item["name"]
+    number = f"{quantity:.2f}".rstrip("0").rstrip(".")  # 500.0 -> "500", 0.5 -> "0.5"
+    unit = SPOKEN_UNITS.get(item["unit"], item["unit"])
+    return f"{number} {unit} {item['name']}" if unit else f"{number} {item['name']}"
+
+
 class Recipes:
     def __init__(self, conn: sqlite3.Connection, user: User):
         self.conn = conn
@@ -85,32 +115,48 @@ class Recipes:
     def add(self, title: str, servings: int, ingredients: list[dict],
             instructions: str = "", source_url: str | None = None) -> dict:
         """ingredients: [{"name", "quantity", "unit"}] (quantity and unit may be None)."""
-        title = title.strip()
-        if not 0 < len(title) <= MAX_TITLE:
-            raise ValueError(f"title: 1 to {MAX_TITLE} characters")
-        if not 0 < servings <= 100:
-            raise ValueError("servings: 1 to 100")
-        if not 0 < len(ingredients) <= MAX_INGREDIENTS:
-            raise ValueError(f"ingredients: 1 to {MAX_INGREDIENTS}")
-        if len(instructions) > MAX_INSTRUCTIONS:
-            raise ValueError(f"instructions: {MAX_INSTRUCTIONS} characters at most")
-        items = [clean_ingredient(i["name"], i.get("quantity"), i.get("unit"))
-                 for i in ingredients]
-
+        title, items = check_recipe(title, servings, ingredients, instructions)
         with self.conn:  # the recipe and all its ingredients, or nothing
             cur = self.conn.execute(
                 "INSERT INTO recipes (title, servings, instructions, source_url, created_by) "
                 "VALUES (?, ?, ?, ?, ?)",
                 (title, servings, instructions.strip(), source_url, self.me),
             )
-            recipe_id = cur.lastrowid
-            self.conn.executemany(
-                "INSERT INTO recipe_ingredients (recipe_id, position, name, quantity, unit) "
-                "VALUES (?, ?, ?, ?, ?)",
-                [(recipe_id, n, i["name"], i["quantity"], i["unit"])
-                 for n, i in enumerate(items)],
+            self._insert_ingredients(cur.lastrowid, items)
+        return self.get(cur.lastrowid)
+
+    def update(self, recipe_id: int, title: str | None = None, servings: int | None = None,
+               ingredients: list[dict] | None = None,
+               instructions: str | None = None) -> dict:
+        """Change a recipe. None = keep as it is. New ingredients replace the
+        old ones (all of them: the list is given in full)."""
+        current = self.get(recipe_id)
+        if current is None:
+            raise ValueError(f"No recipe with id {recipe_id}.")
+        title = current["title"] if title is None else title
+        servings = current["servings"] if servings is None else servings
+        instructions = current["instructions"] if instructions is None else instructions
+        title, items = check_recipe(title, servings,
+                                    current["ingredients"] if ingredients is None else ingredients,
+                                    instructions)
+        with self.conn:  # the recipe and its new ingredients, or nothing
+            self.conn.execute(
+                "UPDATE recipes SET title = ?, servings = ?, instructions = ? WHERE id = ?",
+                (title, servings, instructions.strip(), recipe_id),
             )
+            if ingredients is not None:
+                self.conn.execute("DELETE FROM recipe_ingredients WHERE recipe_id = ?",
+                                  (recipe_id,))
+                self._insert_ingredients(recipe_id, items)
         return self.get(recipe_id)
+
+    def _insert_ingredients(self, recipe_id: int, items: list[dict]) -> None:
+        """Runs inside the caller's transaction."""
+        self.conn.executemany(
+            "INSERT INTO recipe_ingredients (recipe_id, position, name, quantity, unit) "
+            "VALUES (?, ?, ?, ?, ?)",
+            [(recipe_id, n, i["name"], i["quantity"], i["unit"]) for n, i in enumerate(items)],
+        )
 
     def list(self, search: str | None = None) -> list[dict]:
         """Titles only (short = fewer tokens). search: part of the title."""

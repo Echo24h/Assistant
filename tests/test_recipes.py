@@ -90,3 +90,44 @@ def test_agent_tools_for_recipes_and_shopping(data):
 
     with pytest.raises(ToolError, match="No recipe"):
         box.run("get_recipe", {"recipe_id": 999})
+
+
+def test_ingredient_lines_read_back_the_same():
+    from assistant.services.recipes import ingredient_line, parse_ingredient_line
+    for item in [{"name": "pâtes", "quantity": 500.0, "unit": "g"},
+                 {"name": "huile d'olive", "quantity": 2.0, "unit": "tbsp"},
+                 {"name": "citron", "quantity": 0.5, "unit": None},
+                 {"name": "lait", "quantity": 1500.0, "unit": "ml"},
+                 {"name": "sel", "quantity": None, "unit": None}]:
+        assert parse_ingredient_line(ingredient_line(item)) == item, item
+
+
+def test_update_recipe(data):
+    recipe = data.recipes.add("Pâtes tomate", 2, PASTA, "Cuire.")
+    data.shopping.add_recipe(recipe["id"])  # already on the shopping list
+
+    changed = data.recipes.update(recipe["id"], title="Pâtes à la tomate", servings=4)
+    assert (changed["title"], changed["servings"]) == ("Pâtes à la tomate", 4)
+    assert len(changed["ingredients"]) == 3 and changed["instructions"] == "Cuire."  # kept
+
+    changed = data.recipes.update(recipe["id"], ingredients=[
+        {"name": "Spaghetti", "quantity": 400, "unit": "g"}])
+    assert changed["ingredients"] == [{"name": "spaghetti", "quantity": 400, "unit": "g"}]
+    assert len(data.shopping.list()) == 3  # the shopping list is not changed
+
+    with pytest.raises(ValueError, match="ingredients"):
+        data.recipes.update(recipe["id"], ingredients=[])
+    assert len(data.recipes.get(recipe["id"])["ingredients"]) == 1  # nothing changed
+    with pytest.raises(ValueError, match="No recipe"):
+        data.recipes.update(999, title="x")
+
+
+def test_agent_updates_a_recipe_with_confirmation(data):
+    from assistant.agent.tools import ToolBox
+    recipe = data.recipes.add("Pâtes tomate", 2, PASTA)
+    asked = []
+    box = ToolBox(data, confirm=lambda q: asked.append(q) or True)
+    box.run("update_recipe", {"recipe_id": recipe["id"], "title": None, "servings": 4,
+                              "ingredients": None, "instructions": None})
+    assert asked == ["Change the recipe «Pâtes tomate»: 4 people?"]
+    assert data.recipes.get(recipe["id"])["servings"] == 4

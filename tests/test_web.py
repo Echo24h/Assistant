@@ -234,3 +234,20 @@ def test_bug_with_screenshot(server):
     # Big bodies are allowed for this route only: elsewhere, still 64 KB.
     big = json.dumps({"text": "x" * 100_000}).encode()
     assert call(server, "/api/ask", body=big, headers=ME)[0] == 400
+
+
+def test_edit_a_recipe_in_the_tab(server):
+    def post(path, data):
+        return call(server, path, body=json.dumps(data).encode(), headers=ME)
+
+    _, recipe = post("/api/recipes/add", {"title": "Pâtes", "servings": 2,
+                                          "ingredients": "500 g de pâtes\n2 c. à soupe d'huile"})
+    page = json.loads(get(server, f"/api/recipes/get?id={recipe['id']}")[2])
+    assert page["ingredient_lines"] == "500 g pâtes\n2 c. à soupe huile"
+
+    status, changed = post("/api/recipes/update", {
+        "id": recipe["id"], "title": "Pâtes à l'huile", "servings": 3,
+        "ingredients": page["ingredient_lines"] + "\nsel", "instructions": "Cuire."})
+    assert status == 200 and changed["servings"] == 3 and len(changed["ingredients"]) == 3
+    assert post("/api/recipes/update", {"id": recipe["id"], "title": "", "servings": 3,
+                                        "ingredients": "sel"})[0] == 400

@@ -1,7 +1,7 @@
 """Recipes tab: list, read, type in, import from a website, send to shopping."""
 
 from ..services.recipe_import import fetch_recipe
-from ..services.recipes import parse_ingredient_line
+from ..services.recipes import ingredient_line, parse_ingredient_line
 from .api import SharedDB, field, id_of, query_id
 
 
@@ -18,6 +18,8 @@ class RecipesAPI:
                 recipe = data.recipes.get(query_id(query))
             if recipe is None:
                 raise ValueError("This recipe does not exist any more.")
+            # The ingredients as editable text, one per line ("500 g pâtes").
+            recipe["ingredient_lines"] = "\n".join(map(ingredient_line, recipe["ingredients"]))
             return recipe
         return None
 
@@ -30,12 +32,18 @@ class RecipesAPI:
 
         with self.db.data_for(user) as mine:
             if path == "/api/recipes/add":
-                # Ingredients typed one per line: "500 g de pâtes".
-                lines = field(data, "ingredients", str).splitlines()
                 return mine.recipes.add(
                     field(data, "title", str),
                     field(data, "servings", int),
-                    [parse_ingredient_line(line) for line in lines if line.strip()],
+                    typed_ingredients(data),
+                    field(data, "instructions", str, optional=True) or "",
+                )
+            if path == "/api/recipes/update":  # the page sends the whole recipe
+                return mine.recipes.update(
+                    id_of(data),
+                    field(data, "title", str),
+                    field(data, "servings", int),
+                    typed_ingredients(data),
                     field(data, "instructions", str, optional=True) or "",
                 )
             if path == "/api/recipes/delete":
@@ -45,3 +53,9 @@ class RecipesAPI:
                                                  field(data, "servings", int, optional=True))
                 return {"added": len(items)}
         return None
+
+
+def typed_ingredients(data: dict) -> list[dict]:
+    """Ingredients typed one per line ("500 g de pâtes"); empty lines skipped."""
+    lines = field(data, "ingredients", str).splitlines()
+    return [parse_ingredient_line(line) for line in lines if line.strip()]

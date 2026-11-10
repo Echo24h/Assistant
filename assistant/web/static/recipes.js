@@ -68,6 +68,10 @@ document.addEventListener("DOMContentLoaded", () => {
       body.append(link);
     }
 
+    const change = el("button", "small", "✏️ Modifier");
+    change.addEventListener("click", () => editor(body, recipe));
+    body.append(change);
+
     const remove = el("button", "small danger", "Supprimer la recette");
     remove.addEventListener("click", async () => {
       if (!confirm(`Supprimer « ${recipe.title} » ?`)) return;
@@ -75,6 +79,51 @@ document.addEventListener("DOMContentLoaded", () => {
       load();
     });
     body.append(remove);
+  }
+
+  // Edit in place: the same fields as "Écrire une recette", filled in.
+  function editor(body, recipe) {
+    body.textContent = "";
+    const form = el("form", "stack");
+    const title = el("input");
+    title.value = recipe.title;
+    title.maxLength = 200;
+    title.required = true;
+    const servings = el("input");
+    servings.type = "number";
+    servings.min = 1;
+    servings.max = 100;
+    servings.value = recipe.servings;
+    const people = el("label", "", "Pour ");
+    people.append(servings, " personnes");
+    const ingredients = el("textarea");
+    ingredients.rows = Math.max(4, recipe.ingredients.length + 1);
+    ingredients.value = recipe.ingredient_lines;
+    ingredients.required = true;
+    const steps = el("textarea");
+    steps.rows = 5;
+    steps.value = recipe.instructions;
+    steps.placeholder = "Étapes (facultatif)";
+    const buttons = el("div", "row");
+    const save = el("button", "", "Enregistrer");
+    const cancel = el("button", "small", "Annuler");
+    cancel.type = "button";
+    cancel.addEventListener("click", load);
+    buttons.append(save, cancel);
+    form.append(title, people, ingredients, steps, buttons);
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const result = await api("POST", "/api/recipes/update", {
+        id: recipe.id,
+        title: title.value,
+        servings: Number(servings.value),
+        ingredients: ingredients.value,
+        instructions: steps.value,
+      });
+      if (result.type === "error") return alert(result.text);
+      load();
+    });
+    body.append(form);
   }
 
   importForm.addEventListener("submit", async (e) => {

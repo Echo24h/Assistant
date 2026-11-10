@@ -50,6 +50,7 @@ language. Examples:
 
 - "Ajoute payer le loyer pour le 1er, urgent"
 - "Propose-moi un plat avec des courgettes", then "garde-la"
+- "Dans les lasagnes, remplace le bœuf par des lentilles"
 - "Ajoute les lasagnes aux courses pour 4"
 - "J'ai payé 80 CHF de courses" / "Anna m'a remboursé 45 CHF"
 - "Qui doit combien ?"
@@ -57,8 +58,8 @@ language. Examples:
 **In the tabs** (no model, 0 tokens, instant):
 
 - **Tâches**: add, tick, priority (tap the badge), 👥/🔒 to share or not.
-- **Recettes**: import from a link, type one in, send to the shopping list
-  for N people.
+- **Recettes**: import from a link, type one in, ✏️ edit, send to the
+  shopping list for N people.
 - **Courses**: type "2 l de lait", tick in the shop, remove what is ticked.
 - **Budget**: who owes whom at the top, add an expense, the month's list
   and totals per category.

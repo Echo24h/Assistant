@@ -51,13 +51,31 @@ DEFINITIONS = [
         "input_schema": RECIPE_ID,
     },
     {
+        "name": "update_recipe",
+        "description": "Change a saved recipe. null = keep as it is. Use get_recipe "
+                       "first: new ingredients REPLACE all the old ones, so give the "
+                       "full list. The user is asked to confirm.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "recipe_id": {"type": "integer"},
+                "title": {"type": ["string", "null"]},
+                "servings": {"type": ["integer", "null"]},
+                "ingredients": {**INGREDIENTS, "type": ["array", "null"]},
+                "instructions": {"type": ["string", "null"]},
+            },
+            "required": ["recipe_id", "title", "servings", "ingredients", "instructions"],
+            "additionalProperties": False,
+        },
+    },
+    {
         "name": "delete_recipe",
         "description": "Delete a saved recipe. The user is asked to confirm.",
         "input_schema": RECIPE_ID,
     },
 ]
 
-NEEDS_CONFIRMATION = {"save_recipe", "delete_recipe"}
+NEEDS_CONFIRMATION = {"save_recipe", "update_recipe", "delete_recipe"}
 NOT_LOGGED = set()
 
 
@@ -68,6 +86,8 @@ def functions(data) -> dict:
             a["title"], a["servings"], a["ingredients"], a["instructions"]),
         "list_recipes": lambda a: data.recipes.list(a.get("search")),
         "get_recipe": lambda a: get_recipe(data, a["recipe_id"]),
+        "update_recipe": lambda a: data.recipes.update(
+            a["recipe_id"], a["title"], a["servings"], a["ingredients"], a["instructions"]),
         "delete_recipe": lambda a: delete_recipe(data, a["recipe_id"]),
     }
 
@@ -96,4 +116,17 @@ def describe(data, name: str, args: dict) -> str:
         return f"Save the recipe «{args['title']}» ({args['servings']} people: {names}{more})?"
     recipe = data.recipes.get(args["recipe_id"])
     label = recipe["title"] if recipe else f"#{args['recipe_id']} (not found)"
+    if name == "update_recipe":
+        changes = []
+        if args["title"] is not None:
+            changes.append(f"title → «{args['title']}»")
+        if args["servings"] is not None:
+            changes.append(f"{args['servings']} people")
+        if args["ingredients"] is not None:
+            names = ", ".join(i["name"] for i in args["ingredients"][:6])
+            more = "…" if len(args["ingredients"]) > 6 else ""
+            changes.append(f"ingredients → {names}{more}")
+        if args["instructions"] is not None:
+            changes.append("new steps")
+        return f"Change the recipe «{label}»: {'; '.join(changes) or 'nothing'}?"
     return f"Delete the recipe «{label}»?"
