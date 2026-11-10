@@ -50,7 +50,8 @@ Results will be published here.
 ## Setup
 
 Full step-by-step guide (Google console, Tailscale, server, update,
-troubleshooting): [docs/INSTALL.md](docs/INSTALL.md). In short:
+troubleshooting): [docs/INSTALL.md](docs/INSTALL.md). Sharing with the people
+you live with, who sees what: [docs/HOUSEHOLD.md](docs/HOUSEHOLD.md). In short:
 
 ```bash
 git clone git@github.com:Echo24h/Assistant.git && cd Assistant
