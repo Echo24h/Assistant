@@ -227,7 +227,7 @@ expense_shares(expense_id → expenses CASCADE, user_id → users, amount_cents)
 1. Fondations (**fait**) : `db.py` + migrations, `users`, tâches commune/perso,
    un module par domaine ; comportement inchangé.
 2. Recettes et liste de courses (outils + onglets) : **fait**.
-3. Finances (outils + onglet, solde).
+3. Finances (outils + onglet, solde) : **fait**.
 4. Accès de ma copine (Tailscale, outils selon la personne, tâche perso).
 
 ### Migration vers un serveur

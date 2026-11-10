@@ -2,7 +2,7 @@
 
 Built once per conversation (agent) or per request (web page). Each domain
 filters by this user, so the code above never has to think about it.
-Later: finances.
+Domains: tasks, recipes, shopping, finances.
 """
 
 import sqlite3
@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .db import connect
+from .finances import Finances
 from .recipes import Recipes
 from .shopping import Shopping
 from .tasks import Tasks
@@ -30,13 +31,14 @@ class UserData:
     tasks: Tasks
     recipes: Recipes
     shopping: Shopping
+    finances: Finances
 
     def close(self) -> None:
         """Close the connection, when this data has its own (app.build_agent)."""
         self.conn.close()
 
 
-def user_data(conn: sqlite3.Connection, user: User) -> UserData:
+def user_data(conn: sqlite3.Connection, user: User, currency: str = "CHF") -> UserData:
     recipes = Recipes(conn, user)
     return UserData(conn=conn, user=user, tasks=Tasks(conn, user), recipes=recipes,
-                    shopping=Shopping(conn, user, recipes))
+                    shopping=Shopping(conn, user, recipes), finances=Finances(conn, user, currency))

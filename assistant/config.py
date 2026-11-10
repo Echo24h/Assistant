@@ -14,6 +14,7 @@ class Config:
     effort: str  # how hard the model thinks: low / medium / high
     timezone: str  # IANA name, e.g. Europe/Zurich
     language: str  # language of the answers, e.g. French
+    currency: str  # for the shared expenses, e.g. CHF
     data_dir: Path  # real data lives here, outside the repository
     google_client_id: str | None  # OAuth client from Google Cloud (Desktop app)
     google_client_secret: str | None
@@ -55,6 +56,7 @@ def load_config() -> Config:
         effort=os.getenv("ASSISTANT_EFFORT", "low"),
         timezone=os.getenv("ASSISTANT_TIMEZONE", "Europe/Zurich"),
         language=os.getenv("ASSISTANT_LANGUAGE", "English"),
+        currency=os.getenv("ASSISTANT_CURRENCY", "CHF"),
         data_dir=data_dir,
         google_client_id=os.getenv("GOOGLE_CLIENT_ID") or None,
         google_client_secret=os.getenv("GOOGLE_CLIENT_SECRET") or None,

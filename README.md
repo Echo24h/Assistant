@@ -96,7 +96,7 @@ sudo tailscale serve --bg 8765   # HTTPS, visible only to my own devices
   never HTML, and the Content-Security-Policy forbids inline scripts, so
   email content cannot inject code into the page.
 - Tabs: **Chat** (the agent, costs tokens), and **Tasks**, **Recipes**,
-  **Shopping** (read and changed directly in the database: no model,
+  **Shopping**, **Budget** (read and changed directly in the database: no model,
   0 tokens). Confirmations guard the model's decisions; a click is the
   user's own.
 - Recipe import from a link reads the standard schema.org data of the
@@ -123,7 +123,7 @@ assistant/
               db.py + migrations/   SQLite, numbered SQL files
               household.py          entry point: what one person can see
               users.py, tasks.py,   one module per domain
-              recipes.py, shopping.py
+              recipes.py, shopping.py, finances.py
               google/               code talking to the outside: auth.py,
               recipe_import.py      calendar.py, gmail.py; recipe downloads
   agent/      the AI: loop.py (the hand-written agent loop) and tools/
@@ -149,5 +149,6 @@ printf '#!/bin/sh\nexec gitleaks protect --staged --redact -c .gitleaks.toml\n' 
 - [x] Tasks tab without the model (0 tokens), task priorities
 - [x] Household database (migrations, users, shared or private tasks)
 - [x] Recipes and shared shopping list (scaled, added up), import by link
+- [x] Shared expenses: money in cents, equal shares, who owes whom
 - [ ] Evaluation on synthetic emails
 - [ ] Email drafts with confirmation

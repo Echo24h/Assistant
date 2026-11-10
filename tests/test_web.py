@@ -56,7 +56,8 @@ def server(monkeypatch):
     monkeypatch.setattr(web, "build_agent",
                         lambda cfg, confirm, user, cal, gm: FakeAgent(confirm))
     users = {"me@gmail.com": "Grégory"}
-    cfg = NS(web_users=users, people=users, web_dev_user=None, db_path=":memory:")
+    cfg = NS(web_users=users, people=users, web_dev_user=None, db_path=":memory:",
+             currency="CHF")
     httpd = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(App(cfg, None, None)))
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     yield f"http://127.0.0.1:{httpd.server_port}"
@@ -156,7 +157,8 @@ def test_only_the_owner_gets_google(monkeypatch):
     monkeypatch.setattr(web, "build_agent", lambda cfg, confirm, user, cal, gm:
                         given.update({user.name: (cal, gm)}) or FakeAgent(confirm))
     users = {"me@gmail.com": "Grégory", "her@gmail.com": "Anna"}
-    cfg = NS(web_users=users, people=users, web_dev_user=None, db_path=":memory:")
+    cfg = NS(web_users=users, people=users, web_dev_user=None, db_path=":memory:",
+             currency="CHF")
     app = App(cfg, calendar="my calendar", gmail="my gmail")
 
     for login in users:
@@ -187,3 +189,22 @@ def test_recipes_and_shopping_tabs(server):
     assert post("/api/shopping/clear", {}) == (200, {"removed": 1})
     assert post("/api/recipes/add", {"title": "x", "servings": 2, "ingredients": ""})[0] == 400
     assert post("/api/recipes/import", {"url": "http://127.0.0.1/"})[0] == 400  # SSRF
+
+
+def test_finances_tab(server):
+    def post(path, data):
+        return call(server, path, body=json.dumps(data).encode(), headers=ME)
+
+    status, _ = post("/api/finances/add", {"amount": "45,50", "description": "Courses",
+                                           "category": "courses", "split": "equal"})
+    assert status == 200
+    page = json.loads(get(server, "/api/finances")[2])
+    assert page["expenses"][0]["amount"] == "45.50 CHF"
+    assert page["settle"] == []  # alone in this test household: nobody owes
+    assert page["by_category"] == {"courses": "45.50 CHF"}
+
+    assert post("/api/finances/add", {"amount": "-1", "description": "x", "category": "courses",
+                                      "split": "equal"})[0] == 400
+    assert post("/api/finances/add", {"amount": 12, "description": "x", "category": "courses",
+                                      "split": "equal"})[0] == 400  # typed text expected
+    assert post("/api/finances/delete", {"id": page["expenses"][0]["id"]}) == (200, {"ok": True})

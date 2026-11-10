@@ -12,6 +12,7 @@
 <script src="/tasks.js" defer></script>
 <script src="/recipes.js" defer></script>
 <script src="/shopping.js" defer></script>
+<script src="/finances.js" defer></script>
 </head>
 <body>
 <header>
@@ -20,6 +21,7 @@
     <button role="tab" data-view="tasks" aria-selected="false">Tâches</button>
     <button role="tab" data-view="recipes" aria-selected="false">Recettes</button>
     <button role="tab" data-view="shopping" aria-selected="false">Courses</button>
+    <button role="tab" data-view="finances" aria-selected="false">Budget</button>
   </nav>
   <button id="reset" type="button" class="small" title="Nouvelle conversation"
           aria-label="Nouvelle conversation">↺</button>
@@ -85,6 +87,35 @@
     <ul id="shop-list" class="list"></ul>
     <p id="shop-empty" class="meta" hidden>Liste vide.</p>
     <button id="shop-clear" type="button" class="small center" hidden>Retirer les articles cochés</button>
+  </div>
+</section>
+
+<!-- Shared expenses and who owes whom (no model, 0 tokens) -->
+<section id="view-finances" class="view" hidden>
+  <div class="scroll">
+    <p id="fin-settle" class="card settle"></p>
+    <details id="fin-new" class="card">
+      <summary>➕ Nouvelle dépense</summary>
+      <form id="fin-form" class="stack">
+        <input id="fin-amount" inputmode="decimal" placeholder="Montant, ex. 45,50" required>
+        <input id="fin-description" placeholder="Quoi ? ex. Courses Migros" maxlength="200" required>
+        <select id="fin-category" aria-label="Catégorie"></select>
+        <label>Payé par <select id="fin-payer"></select></label>
+        <select id="fin-split" aria-label="Partage">
+          <option value="equal">Partagé à parts égales</option>
+          <option value="for_others">Entièrement pour l'autre (ou remboursement)</option>
+        </select>
+        <input id="fin-day" type="date" aria-label="Date">
+        <button type="submit">Ajouter</button>
+      </form>
+    </details>
+    <div class="row month">
+      <button id="fin-prev" type="button" class="small" aria-label="Mois précédent">‹</button>
+      <strong id="fin-month"></strong>
+      <button id="fin-next" type="button" class="small" aria-label="Mois suivant">›</button>
+    </div>
+    <p id="fin-totals" class="meta"></p>
+    <ul id="fin-list" class="list"></ul>
   </div>
 </section>
 </body>

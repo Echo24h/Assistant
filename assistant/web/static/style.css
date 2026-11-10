@@ -26,7 +26,7 @@ header {
   padding: 8px 12px; padding-top: max(8px, env(safe-area-inset-top));
   border-bottom: 1px solid var(--border); background: var(--panel);
 }
-nav { display: flex; gap: 4px; }
+nav { display: flex; gap: 2px; min-width: 0; overflow-x: auto; scrollbar-width: none; }  /* 5 tabs on a phone */
 nav button {
   border: 0; background: transparent; padding: 8px 10px; border-radius: 10px;
   color: var(--muted); font-weight: 600;
@@ -135,3 +135,12 @@ nav button[aria-selected="true"] { background: var(--bg); color: var(--text); }
 .source { color: var(--me); font-size: 14px; }
 .danger { color: var(--no); align-self: flex-start; }
 .center { display: block; margin: 0 auto; }
+
+/* Budget */
+.settle { font-weight: 600; text-align: center; }
+.stack select, .stack label select {
+  border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; background: var(--bg);
+}
+.month { justify-content: center; margin: 4px 0 0; }
+.month strong { min-width: 9em; text-align: center; text-transform: capitalize; }
+.list .sub { display: block; font-size: 13px; color: var(--muted); }

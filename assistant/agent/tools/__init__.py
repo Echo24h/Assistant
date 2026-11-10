@@ -6,7 +6,7 @@ Safety rules enforced here, in code (not in the prompt):
 - CONFIRMATION: tools listed in a domain's NEEDS_CONFIRMATION only run if
   the user says yes. Obvious mistakes are caught before asking (check).
 
-Each domain (tasks.py, recipes.py, shopping.py, calendar.py, gmail.py) brings its own tools; later,
+Each domain (tasks.py, recipes.py, shopping.py, finances.py, calendar.py, gmail.py) brings its own tools; later,
 the domains given to the ToolBox can depend on who is talking.
 """
 
@@ -14,6 +14,7 @@ import json
 from typing import Callable
 
 from . import calendar as calendar_tools
+from . import finances as finance_tools
 from . import gmail as gmail_tools
 from . import recipes as recipe_tools
 from . import shopping as shopping_tools
@@ -41,6 +42,7 @@ class ToolBox:
         self._add(task_tools, data)
         self._add(recipe_tools, data)
         self._add(shopping_tools, data)
+        self._add(finance_tools, data)
         if calendar is not None:
             self._add(calendar_tools, calendar)
         if gmail is not None:

@@ -41,7 +41,7 @@ def build_agent(cfg, confirm, user: User, calendar, gmail) -> Agent:
 
     calendar and gmail: given for the owner only (they are the owner's accounts).
     """
-    data = user_data(connect(cfg.db_path), user)  # own connection: runs in its own thread
+    data = user_data(connect(cfg.db_path), user, cfg.currency)  # own connection: runs in its own thread
     return Agent(
         client=anthropic.Anthropic(),  # reads ANTHROPIC_API_KEY from the environment
         toolbox=ToolBox(data, confirm=confirm, calendar=calendar, gmail=gmail),

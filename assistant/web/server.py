@@ -32,6 +32,7 @@ import anthropic
 from ..app import api_error_message, build_agent, open_database
 from ..services.users import User
 from .api import SharedDB
+from .finances_api import FinancesAPI
 from .recipes_api import RecipesAPI
 from .shopping_api import ShoppingAPI
 from .tasks_api import TasksAPI
@@ -46,6 +47,7 @@ STATIC = {
     "/tasks.js": ("tasks.js", "text/javascript; charset=utf-8"),
     "/recipes.js": ("recipes.js", "text/javascript; charset=utf-8"),
     "/shopping.js": ("shopping.js", "text/javascript; charset=utf-8"),
+    "/finances.js": ("finances.js", "text/javascript; charset=utf-8"),
 }
 # No inline script or style is allowed: even injected HTML could not run code.
 CSP = ("default-src 'self'; frame-ancestors 'none'; base-uri 'none'; "
@@ -130,11 +132,12 @@ class App:
         self.calendar = calendar
         self.gmail = gmail
         conn, self.owner = open_database(cfg)
-        self.db = SharedDB(conn)  # one connection + one lock for all the web APIs
+        self.db = SharedDB(conn, cfg.currency)  # one connection + one lock for all the web APIs
         self.sessions: dict[str, Session] = {}
         self.lock = threading.Lock()  # protects self.sessions
         # Direct features, no model: one API per domain (web/*_api.py).
-        self.apis = [TasksAPI(self.db), RecipesAPI(self.db), ShoppingAPI(self.db)]
+        self.apis = [TasksAPI(self.db), RecipesAPI(self.db), ShoppingAPI(self.db),
+                     FinancesAPI(self.db)]
 
     def direct(self, method: str, user: User, path: str, payload: dict) -> dict | None:
         """Ask each domain API in turn; None if no API knows this path."""
