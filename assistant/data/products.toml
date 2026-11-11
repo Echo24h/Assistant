@@ -487,6 +487,7 @@ aliases = ["cébette", "ciboule"]
 fr = "Piment frais"
 en = "Fresh chili pepper"
 aisle = "fruits et légumes"
+aliases = ["piment végétarien", "piment oiseau", "piment antillais", "piment rouge frais", "piment vert"]
 
 [snow_pea]
 fr = "Pois gourmand"
@@ -734,6 +735,7 @@ aliases = ["lardon", "bacon"]
 fr = "Saucisse"
 en = "Sausage"
 aisle = "viande et poisson"
+aliases = ["saucisse fumée", "saucisse de morteau", "saucisse créole", "saucisse de toulouse", "saucisse de montbéliard"]
 
 [chorizo]
 fr = "Chorizo"

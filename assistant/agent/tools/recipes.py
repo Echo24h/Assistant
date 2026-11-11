@@ -9,8 +9,12 @@ INGREDIENTS = {
         "properties": {
             "name": {"type": "string", "description": "Singular, e.g. 'tomato'."},
             "quantity": {"type": ["number", "null"], "description": "null = 'some' (salt)."},
-            "unit": {"type": ["string", "null"],
-                     "description": "g, ml, tsp, tbsp... null = pieces."},
+            # A closed list: quantities of the same product must add up on the
+            # shopping list ("3 gousse" and "1" would not). The API enforces it.
+            "unit": {"type": "string",
+                     "enum": ["piece", "g", "kg", "ml", "cl", "l", "tsp", "tbsp"],
+                     "description": "piece = count it (3 cloves of garlic = 3 piece, "
+                                    "2 sprigs of thyme = 2 piece)."},
         },
         "required": ["name", "quantity", "unit"],
         "additionalProperties": False,
@@ -88,14 +92,23 @@ NOT_LOGGED = set()
 def functions(data) -> dict:
     """data: services.household.UserData."""
     return {
-        "save_recipe": lambda a: data.recipes.add(
-            a["title"], a["servings"], a["ingredients"], a["instructions"]),
+        "save_recipe": lambda a: saved(data.recipes.add(
+            a["title"], a["servings"], a["ingredients"], a["instructions"])),
         "list_recipes": lambda a: data.recipes.list(a.get("search")),
         "get_recipe": lambda a: get_recipe(data, a["recipe_id"]),
-        "update_recipe": lambda a: data.recipes.update(
-            a["recipe_id"], a["title"], a["servings"], a["ingredients"], a["instructions"]),
+        "update_recipe": lambda a: saved(data.recipes.update(
+            a["recipe_id"], a["title"], a["servings"], a["ingredients"], a["instructions"])),
         "delete_recipe": lambda a: delete_recipe(data, a["recipe_id"]),
     }
+
+
+def saved(recipe: dict) -> dict:
+    """A short result after saving. Not the full recipe: the model would
+    compare the catalog's names with its own words and comment on them
+    (seen in real use, even when told not to), and it costs tokens. The
+    user already saw the saved names in the confirmation."""
+    return {"id": recipe["id"], "title": recipe["title"], "servings": recipe["servings"],
+            "ingredients": len(recipe["ingredients"])}
 
 
 def get_recipe(data, recipe_id: int) -> dict:

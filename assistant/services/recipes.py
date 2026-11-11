@@ -24,7 +24,7 @@ UNITS = {
     "c. à soupe": ("tbsp", 1), "cs": ("tbsp", 1), "cuillère à soupe": ("tbsp", 1),
     "tbsp": ("tbsp", 1),
     "pièce": (None, 1), "pièces": (None, 1), "piece": (None, 1), "pieces": (None, 1),
-}
+}  # stored units: g, ml, tsp, tbsp, or None (pieces)
 
 
 NUMBER = re.compile(r"^\s*(\d+/\d+|\d+(?:[.,]\d+)?|[½¼¾])\s*")
@@ -68,13 +68,13 @@ def clean_ingredient(name: str, quantity: float | None, unit: str | None) -> dic
         raise ValueError("ingredient name: 1 to 100 characters")
     if quantity is not None and not quantity > 0:
         raise ValueError(f"quantity of {name}: positive, or null")
-    unit = (unit or "").strip().lower() or None
-    if unit is not None and len(unit) > 20:
-        raise ValueError(f"unit of {name}: 20 characters at most")
-    if unit in UNITS:
-        unit, factor = UNITS[unit]
-        if quantity is not None:
-            quantity = quantity * factor
+    unit = (unit or "piece").strip().lower()
+    if unit not in UNITS:  # strict, like the products: quantities must add up
+        raise ValueError(f"unit of {name}: g, kg, ml, cl, l, tsp, tbsp or none "
+                         "(count cloves, branches, slices... as pieces)")
+    unit, factor = UNITS[unit]
+    if quantity is not None:
+        quantity = quantity * factor
     return {"name": name, "quantity": quantity, "unit": unit}
 
 

@@ -122,3 +122,22 @@ def test_agent_updates_a_recipe_with_confirmation(data):
                               "ingredients": None, "instructions": None})
     assert asked == ["Change the recipe «Pâtes tomate»: 4 people?"]
     assert data.recipes.get(recipe["id"])["servings"] == 4
+
+
+def test_saving_returns_a_short_result(data):
+    """The full recipe made the model comment on renamed ingredients."""
+    import json
+    from assistant.agent.tools import ToolBox
+    box = ToolBox(data, confirm=lambda q: True)
+    result = json.loads(box.run("save_recipe", {"title": "Rougail", "servings": 4,
+                                                "ingredients": PASTA, "instructions": "1. Cuire."}))
+    assert result == {"id": result["id"], "title": "Rougail", "servings": 4, "ingredients": 3}
+
+
+def test_units_are_a_closed_list(data):
+    """Seen in real use: "3 gousse", "2 cm", "2 branche" would not add up."""
+    with pytest.raises(ValueError, match="count cloves"):
+        data.recipes.add("Rougail", 4, [{"name": "ail", "quantity": 3, "unit": "gousse"}])
+    recipe = data.recipes.add("Rougail", 4, [{"name": "ail", "quantity": 3, "unit": "piece"},
+                                             {"name": "lait", "quantity": 1, "unit": "l"}])
+    assert [(i["quantity"], i["unit"]) for i in recipe["ingredients"]] == [(3, None), (1000, "ml")]
