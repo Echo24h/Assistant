@@ -82,7 +82,7 @@ def test_agent_tools_for_recipes_and_shopping(data):
     box.run("save_recipe", {"title": "Pâtes tomate", "servings": 2,
                             "ingredients": PASTA, "instructions": "1. Cuire."})
     assert asked == ["Save the recipe «Pâtes tomate» for 2 people: "
-                     "Pâtes 0.5 kg, Tomate 4, Sel?"]  # quantities visible before yes
+                     "Pâtes 500 g, Tomate 4, Sel?"]  # catalog names, stored quantities
 
     recipe_id = data.recipes.list()[0]["id"]
     box.run("add_recipe_to_shopping_list", {"recipe_id": recipe_id, "servings": None})

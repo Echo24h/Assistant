@@ -145,3 +145,20 @@ def test_tap_water_is_never_on_the_shopping_list(data):
     with pytest.raises(ValueError, match="never bought"):
         data.shopping.add("eau du robinet")
     data.shopping.add("eau minérale", 6)  # bottled water: bought
+
+
+def test_confirmation_shows_what_will_be_saved(data):
+    """Seen in real use: the question said "eau tiède 320 ml, 2 tbsp" while
+    "Eau" and "c. à soupe" were saved: show the catalog's words."""
+    from assistant.agent.tools import ToolBox
+    asked = []
+    box = ToolBox(data, confirm=lambda q: asked.append(q) or False)
+    with pytest.raises(Exception, match="declined"):
+        box.run("save_recipe", {"title": "Pâte à pizza", "servings": 4, "instructions": "",
+                                "ingredients": [
+                                    {"name": "farine", "quantity": 0.5, "unit": "kg"},
+                                    {"name": "eau tiède", "quantity": 320, "unit": "ml"},
+                                    {"name": "levure de boulanger fraîche", "quantity": 10, "unit": "g"},
+                                    {"name": "huile d'olive", "quantity": 2, "unit": "tbsp"}]})
+    assert asked == ["Save the recipe «Pâte à pizza» for 4 people: Farine 500 g, Eau 320 ml, "
+                     "Levure boulangère 10 g, Huile d'olive 2 c. à soupe?"]

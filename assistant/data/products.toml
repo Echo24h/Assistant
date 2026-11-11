@@ -17,7 +17,7 @@
 fr = "Tomate"
 en = "Tomato"
 aisle = "fruits et légumes"
-aliases = ["tomate grappe"]
+aliases = ["tomate grappe", "tomate fraîche"]
 
 [cherry_tomato]
 fr = "Tomate cerise"
@@ -33,7 +33,7 @@ aisle = "fruits et légumes"
 fr = "Oignon"
 en = "Onion"
 aisle = "fruits et légumes"
-aliases = ["oignon jaune"]
+aliases = ["oignon jaune", "oignon blanc", "oignon émincé"]
 
 [red_onion]
 fr = "Oignon rouge"
@@ -49,7 +49,7 @@ aisle = "fruits et légumes"
 fr = "Ail"
 en = "Garlic"
 aisle = "fruits et légumes"
-aliases = ["gousse d'ail", "gousses d'ail"]
+aliases = ["gousse d'ail", "gousses d'ail", "ail haché", "ail écrasé"]
 
 [potato]
 fr = "Pomme de terre"
@@ -179,12 +179,13 @@ aliases = ["gingembre frais"]
 fr = "Citron"
 en = "Lemon"
 aisle = "fruits et légumes"
-aliases = ["citron jaune"]
+aliases = ["citron jaune", "jus de citron", "zeste de citron"]
 
 [lime]
 fr = "Citron vert"
 en = "Lime"
 aisle = "fruits et légumes"
+aliases = ["jus de citron vert", "zeste de citron vert"]
 
 [orange]
 fr = "Orange"
@@ -260,16 +261,19 @@ aisle = "fruits et légumes"
 fr = "Persil"
 en = "Parsley"
 aisle = "fruits et légumes"
+aliases = ["persil plat", "persil frisé"]
 
 [basil]
 fr = "Basilic"
 en = "Basil"
 aisle = "fruits et légumes"
+aliases = ["basilic frais"]
 
 [coriander]
 fr = "Coriandre"
 en = "Coriander"
 aisle = "fruits et légumes"
+aliases = ["coriandre fraîche"]
 
 [chives]
 fr = "Ciboulette"
@@ -953,11 +957,13 @@ aisle = "viande et poisson"
 fr = "Lait"
 en = "Milk"
 aisle = "frais"
+aliases = ["lait entier", "lait demi-écrémé", "lait écrémé", "lait tiède"]
 
 [butter]
 fr = "Beurre"
 en = "Butter"
 aisle = "frais"
+aliases = ["beurre doux", "beurre demi-sel", "beurre mou", "beurre fondu", "beurre pommade"]
 
 [cream]
 fr = "Crème fraîche"
@@ -977,8 +983,9 @@ fr = "Œuf"
 en = "Egg"
 aisle = "frais"
 # A yolk or a white is one egg to buy.
-aliases = ["oeuf", "jaune d'œuf", "jaunes d'œufs", "jaune d'oeuf", "jaunes d'oeufs",
-           "blanc d'œuf", "blancs d'œufs", "blanc d'oeuf", "blancs d'oeufs", "egg yolk", "egg white"]
+aliases = ["oeuf", "œuf entier", "oeuf entier", "jaune d'œuf", "jaunes d'œufs", "jaune d'oeuf",
+           "jaunes d'oeufs", "blanc d'œuf", "blancs d'œufs", "blanc d'oeuf", "blancs d'oeufs",
+           "egg yolk", "egg white"]
 
 [yogurt]
 fr = "Yaourt"
@@ -1006,12 +1013,13 @@ aliases = ["parmesan râpé"]
 fr = "Fromage râpé"
 en = "Grated cheese"
 aisle = "frais"
-aliases = ["gruyère râpé", "emmental râpé"]
+aliases = ["gruyère râpé", "emmental râpé", "fromage râpé"]
 
 [mozzarella]
 fr = "Mozzarella"
 en = "Mozzarella"
 aisle = "frais"
+aliases = ["mozzarella di bufala", "boule de mozzarella"]
 
 [feta]
 fr = "Feta"
@@ -1241,7 +1249,7 @@ aisle = "frais"
 fr = "Pâtes"
 en = "Pasta"
 aisle = "épicerie"
-aliases = ["pâtes (spaghetti)", "spaghetti", "spaghettis", "penne", "fusilli", "tagliatelle", "tagliatelles", "coquillette"]
+aliases = ["pâtes (spaghetti)", "spaghetti", "spaghettis", "penne", "fusilli", "tagliatelle", "tagliatelles", "coquillette", "pâtes sèches"]
 
 [lasagna_sheets]
 fr = "Lasagnes (feuilles)"
@@ -1253,7 +1261,7 @@ aliases = ["feuille de lasagne", "lasagne"]
 fr = "Riz"
 en = "Rice"
 aisle = "épicerie"
-aliases = ["riz basmati", "riz long"]
+aliases = ["riz basmati", "riz long", "riz blanc"]
 
 [risotto_rice]
 fr = "Riz à risotto"
@@ -1294,17 +1302,19 @@ aliases = ["haricot rouge"]
 fr = "Farine"
 en = "Flour"
 aisle = "épicerie"
+aliases = ["farine de blé", "farine t45", "farine t55", "farine t65", "farine blanche", "farine tout usage"]
 
 [sugar]
 fr = "Sucre"
 en = "Sugar"
 aisle = "épicerie"
-aliases = ["sucre en poudre"]
+aliases = ["sucre en poudre", "sucre semoule", "sucre blanc", "sucre cristal"]
 
 [brown_sugar]
 fr = "Sucre roux"
 en = "Brown sugar"
 aisle = "épicerie"
+aliases = ["cassonade", "vergeoise"]
 
 [icing_sugar]
 fr = "Sucre glace"
@@ -1315,11 +1325,13 @@ aisle = "épicerie"
 fr = "Levure chimique"
 en = "Baking powder"
 aisle = "épicerie"
+aliases = ["poudre à lever", "sachet de levure chimique"]
 
 [yeast]
 fr = "Levure boulangère"
 en = "Yeast"
 aisle = "épicerie"
+aliases = ["levure de boulanger", "levure de boulanger fraîche", "levure fraîche", "levure sèche", "levure sèche de boulanger", "levure de boulangerie"]
 
 [cocoa]
 fr = "Cacao en poudre"
@@ -1330,7 +1342,7 @@ aisle = "épicerie"
 fr = "Chocolat noir"
 en = "Dark chocolate"
 aisle = "épicerie"
-aliases = ["chocolat"]
+aliases = ["chocolat", "chocolat pâtissier", "chocolat noir pâtissier"]
 
 [honey]
 fr = "Miel"
@@ -1356,6 +1368,7 @@ aisle = "épicerie"
 fr = "Huile d'olive"
 en = "Olive oil"
 aisle = "épicerie"
+aliases = ["huile d'olive vierge extra", "huile d'olive vierge"]
 
 [oil]
 fr = "Huile"
@@ -1393,13 +1406,13 @@ aisle = "épicerie"
 fr = "Sel"
 en = "Salt"
 aisle = "épicerie"
-aliases = ["fleur de sel", "gros sel"]
+aliases = ["fleur de sel", "gros sel", "sel fin"]
 
 [pepper]
 fr = "Poivre"
 en = "Pepper"
 aisle = "épicerie"
-aliases = ["poivre noir"]
+aliases = ["poivre noir", "poivre du moulin", "poivre moulu"]
 
 [oregano]
 fr = "Origan"
@@ -1411,6 +1424,7 @@ aliases = ["origan séché"]
 fr = "Thym"
 en = "Thyme"
 aisle = "épicerie"
+aliases = ["thym frais", "thym séché"]
 
 [bay_leaf]
 fr = "Laurier"
@@ -1443,6 +1457,7 @@ aliases = ["curry en poudre"]
 fr = "Cannelle"
 en = "Cinnamon"
 aisle = "épicerie"
+aliases = ["cannelle en poudre"]
 
 [nutmeg]
 fr = "Noix de muscade"
@@ -1466,7 +1481,7 @@ aliases = ["sucre vanillé", "extrait de vanille", "gousse de vanille", "gousses
 fr = "Bouillon"
 en = "Stock cube"
 aisle = "épicerie"
-aliases = ["cube de bouillon", "bouillon de légume", "bouillon de volaille"]
+aliases = ["cube de bouillon", "bouillon de légume", "bouillon de volaille", "bouillon cube", "fond de volaille", "fond de veau"]
 
 [crushed_tomatoes]
 fr = "Tomates concassées"
@@ -1483,7 +1498,7 @@ aisle = "épicerie"
 fr = "Sauce tomate"
 en = "Tomato sauce"
 aisle = "épicerie"
-aliases = ["coulis de tomate", "passata"]
+aliases = ["coulis de tomate", "passata", "purée de tomates", "purée de tomate"]
 
 [coconut_milk]
 fr = "Lait de coco"
@@ -1593,7 +1608,7 @@ aisle = "épicerie"
 fr = "Fécule de maïs"
 en = "Cornstarch"
 aisle = "épicerie"
-aliases = ["maïzena"]
+aliases = ["maïzena", "fécule"]
 
 [wholemeal_flour]
 fr = "Farine complète"
@@ -2089,11 +2104,13 @@ aisle = "boissons"
 fr = "Vin rouge"
 en = "Red wine"
 aisle = "boissons"
+aliases = ["vin rouge sec"]
 
 [white_wine]
 fr = "Vin blanc"
 en = "White wine"
 aisle = "boissons"
+aliases = ["vin blanc sec"]
 
 [tonic]
 fr = "Tonic"

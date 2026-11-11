@@ -1,5 +1,7 @@
 """Recipe tools (services/recipes.py). Recipes are shared by the household."""
 
+from ...services.recipes import clean_ingredient
+
 INGREDIENTS = {
     "type": "array",
     "items": {
@@ -116,20 +118,29 @@ def check(data, name: str, args: dict) -> None:
         data.products.check_known([i["name"] for i in args["ingredients"]])
 
 
-def amounts(ingredients: list[dict]) -> str:
-    """"Œuf 4, Lait 500 ml, Sel": every line with its quantity, so that the
-    user can see a wrong quantity BEFORE saying yes (it happened: 12 eggs)."""
+# Spoon units as written in the page (French); other units are written as stored.
+UNIT_LABELS = {"tsp": "c. à café", "tbsp": "c. à soupe"}
+
+
+def amounts(data, ingredients: list[dict]) -> str:
+    """"Œuf 4, Lait 500 ml, Sel": what will REALLY be saved, so that the user
+    can check it before saying yes (it happened: 12 eggs). Each line shows the
+    catalog's name and the stored quantity (1 kg -> 1000 g), not the model's words."""
     def one(i):
-        quantity = "" if i["quantity"] is None else f" {i['quantity']:g}"
-        unit = f" {i['unit']}" if i["unit"] and i["quantity"] is not None else ""
-        return f"{i['name']}{quantity}{unit}"
+        item = clean_ingredient(i["name"], i["quantity"], i["unit"])
+        product = data.products.catalog.find(item["name"])
+        name = product.name(data.products.language) if product else item["name"]
+        if item["quantity"] is None:
+            return name
+        unit = UNIT_LABELS.get(item["unit"], item["unit"]) if item["unit"] else ""
+        return f"{name} {item['quantity']:g} {unit}".rstrip()
     return ", ".join(one(i) for i in ingredients)
 
 
 def describe(data, name: str, args: dict) -> str:
     if name == "save_recipe":
         return (f"Save the recipe «{args['title']}» for {args['servings']} people: "
-                f"{amounts(args['ingredients'])}?")
+                f"{amounts(data, args['ingredients'])}?")
     recipe = data.recipes.get(args["recipe_id"])
     label = recipe["title"] if recipe else f"#{args['recipe_id']} (not found)"
     if name == "update_recipe":
@@ -139,7 +150,7 @@ def describe(data, name: str, args: dict) -> str:
         if args["servings"] is not None:
             changes.append(f"{args['servings']} people")
         if args["ingredients"] is not None:
-            changes.append(f"ingredients → {amounts(args['ingredients'])}")
+            changes.append(f"ingredients → {amounts(data, args['ingredients'])}")
         if args["instructions"] is not None:
             changes.append("new steps")
         return f"Change the recipe «{label}»: {'; '.join(changes) or 'nothing'}?"
